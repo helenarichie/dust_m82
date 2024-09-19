@@ -3,7 +3,7 @@ sys.path.insert(0, "/ix/eschneider/helena/code/my_scripts/")
 from hconfig import *
 from csv import writer
 
-date = "m82"
+date = "2024-08-28"
 
 ###############################
 crc = True
@@ -13,8 +13,8 @@ frontier = False
 ########## data type ############
 debugging = False
 cloud_wind = False
-testing = True
-m82 = False
+testing = False
+m82 = True
 #################################
 
 if crc:
@@ -63,7 +63,7 @@ row_dust_2 = np.zeros((10, 4))
 row_dust_3 = np.zeros((10, 4))
 row_gas = np.zeros((10, 4))
 
-with open(os.path.join(basedir, "output.log")) as f:
+with open(os.path.join(basedir, "m82_fixed.log")) as f:
     for line in f:
         line_split = list(line)
         if line_split[0].isdigit():
@@ -73,6 +73,8 @@ with open(os.path.join(basedir, "output.log")) as f:
                 line = line.replace("(cool) ", "")
                 line.rstrip("\n")
                 line = line.split("  ")
+                while("" in line):
+                    line.remove("")
                 # for each vertical bin
                 for i in range(0, 11):
                     # if i is the bin index
@@ -87,6 +89,8 @@ with open(os.path.join(basedir, "output.log")) as f:
                 line = line.replace("(cool) ", "")
                 line.rstrip("\n")
                 line = line.split("  ")
+                while("" in line):
+                    line.remove("")
                 # for each vertical bin
                 for i in range(0, 11):
                     # if i is the bin index
@@ -101,12 +105,14 @@ with open(os.path.join(basedir, "output.log")) as f:
                 line = line.replace("(cool) ", "")
                 line.rstrip("\n")
                 line = line.split("  ")
+                while("" in line):
+                    line.remove("")
                 # for each vertical bin
                 for i in range(0, 11):
                     # if i is the bin index
                     if line[0] == str(i):
                         row_gas[i] = [times_counter, float(line[1]), float(line[2]), float(line[3])]
-        elif line.startswith("n_step"):            
+        elif line.startswith("n_step"):         
             with open(os.path.join(csvdir, "sputtered_0.csv"), "a") as f_txt:
                 writer_obj = writer(f_txt)
                 writer_obj.writerow(row_sputtered_0)
@@ -153,4 +159,6 @@ with open(os.path.join(basedir, "output.log")) as f:
             row_dust_3 = np.zeros((10, 4))
             row_gas = np.zeros((10, 4))
             line = line.split(" ")
-            times_counter = float(line[6])
+            while("" in line):
+                line.remove("")
+            times_counter = float(line[4])
