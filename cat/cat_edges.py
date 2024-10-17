@@ -6,7 +6,7 @@ os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 ###############################
 date = "m82"
 ns = 0
-ne = 13
+ne = 18
 n_procs = 4
 DE = True
 BASIC_SCALAR = True
