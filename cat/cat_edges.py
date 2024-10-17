@@ -4,10 +4,10 @@ import os
 os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
 ###############################
-date = "m82"
+date = "2024-08-28"
 ns = 0
-ne = 18
-n_procs = 4
+ne = 1000
+n_procs = 8192
 DE = True
 BASIC_SCALAR = True
 DUST = True
@@ -15,8 +15,9 @@ N_GRAIN_SIZES = 4
 ###############################
 
 ###############################
-crc = True
+crc = False
 frontier = False
+summit = True
 ###############################
 
 ###############################
@@ -35,6 +36,10 @@ if frontier:
   basedir = f"/lustre/orion/ast181/scratch/helenarichie/{date}/"
   dnamein = os.path.join(basedir, "hdf5/raw")
   dnameout = os.path.join(basedir, "hdf5/edges/")
+if summit:
+  basedir = f"/gpfs/alpine2/ast200/proj-shared/helena/{date}/"
+  dnamein = os.path.join(basedir, "hdf5/raw")
+  dnameout = os.path.join(basedir, "hdf5/edges/")
 
 # loop over the output times
 for n in range(ns, ne+1):
@@ -48,7 +53,7 @@ for n in range(ns, ne+1):
   for i in range(0, n_procs):
 
     # open the input file for reading
-    filein = h5py.File(dnamein+str(n)+'/'+str(n)+'_edges.h5.'+str(i), 'r')
+    filein = h5py.File(dnamein+'/'+str(n)+'/'+str(n)+'_edges.h5.'+str(i), 'r')
     # read in the header data from the input file
     head = filein.attrs
 
