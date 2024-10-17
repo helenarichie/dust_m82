@@ -13,11 +13,12 @@ from hconfig import *
 
 date = "2024-08-28"
 tmaxs = np.linspace(0, 51) * 1e3
-substr = "dust_3"
+substr = "gas"
 # ymax = 3e8  # high-z gas
-# ymax = 2e7  # m82 gas
+ymax = 2e7  # m82 gas
 # ymax = 3e6  # high-z dust
-ymax = 2e4  # m82 dust
+# ymax = 2e4  # m82 dust
+no_disk = True
 
 ########## data type ############
 debugging = False
@@ -43,8 +44,10 @@ if mypc:
 csvdir = os.path.join(basedir, "csv/")
 
 masses = np.zeros((10, 3))
-# d_arr = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-d_arr = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+if no_disk:
+    d_arr = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+else:
+    d_arr = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 labels = ["hot", "mixed", "cool"]
 
 breakout = False
@@ -65,8 +68,11 @@ with open(os.path.join(csvdir, f"{substr}.csv")) as f:
             else:
                 for j in range(0, 2+1):
                     masses_arr = np.array(masses[:,j])
-                    plt.stairs(masses_arr[1:], d_arr, label=labels[j] + rf", total = {np.sum(masses[:,j][d_arr>1]):.1e} $M_\odot$", linewidth=2)
-                    print(f"{labels[j]} {substr} total mass at {round(tmaxs[tmax_i]/1e3, 1):.2e} Myr: {np.sum(masses[:,j][d_arr>1]):.2e} M_sun")
+                    if no_disk:
+                        plt.stairs(masses_arr[1:], d_arr, label=labels[j] + rf", total = {np.sum(masses[:,j][1:]):.1e} $M_\odot$", linewidth=2)
+                    else:
+                        plt.stairs(masses_arr, d_arr, label=labels[j] + rf", total = {np.sum(masses[:,j][1:]):.1e} $M_\odot$", linewidth=2)
+                    print(f"{labels[j]} {substr} total mass at {round(tmaxs[tmax_i]/1e3, 1):.2e} Myr: {np.sum(masses[:,j][1:]):.2e} M_sun")
                 print("\n")
                 plt.title(f"{substr} mass, $t={round(tmaxs[tmax_i]/1e3, 1)}$ Myr")
                 plt.yscale('log')

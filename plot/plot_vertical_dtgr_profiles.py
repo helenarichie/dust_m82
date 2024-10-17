@@ -13,7 +13,8 @@ from hconfig import *
 
 date = "2024-08-28"
 tmaxs = np.linspace(0, 51) * 1e3
-substr = "sputtered_3"
+substr = "dtg_3"
+dust_substr = "dust_3"
 no_disk = True
 
 ########## data type ############
@@ -39,7 +40,7 @@ if mypc:
 
 csvdir = os.path.join(basedir, "csv/")
 
-sputtered = np.zeros((10, 3))
+dtgr = np.zeros((10, 3))
 if no_disk:
     d_arr = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 else:
@@ -48,33 +49,38 @@ labels = ["hot", "mixed", "cool"]
 
 breakout = False
 tmax_i = 0
-with open(os.path.join(csvdir, f"{substr}.csv")) as f:
-    for line in f:
-        line = line.split(",")
-        for i, bin in enumerate(line):
-            bin = bin.replace("[", "")
-            bin = bin.replace("]", "")
-            bin = bin.split(" ")
-            while("" in bin):
-                bin.remove("")
+with open(os.path.join(csvdir, "gas.csv")) as f1, open(os.path.join(csvdir, f"{dust_substr}.csv")) as f2:
+    for line1, line2 in zip(f1, f2):
+        line1 = line1.split(",")
+        line2 = line2.split(",")
+        for i, (bin1, bin2) in enumerate(zip(line1, line2)):
+            bin1 = bin1.replace("[", "")
+            bin1 = bin1.replace("]", "")
+            bin1 = bin1.split(" ")
+            bin2 = bin2.replace("[", "")
+            bin2 = bin2.replace("]", "")
+            bin2 = bin2.split(" ")
+            while("" in bin1):
+                bin1.remove("")
+            while("" in bin2):
+                bin2.remove("")
             if i < 10:
-                sputtered[i] = sputtered[i] + np.array(bin[1:4], dtype=float)
-            if float(bin[0]) <= tmaxs[tmax_i]:
+                dtgr[i] = np.array(bin2[1:4],dtype=float)/np.array(bin1[1:4], dtype=float)
+            if float(bin1[0]) <= tmaxs[tmax_i]:
                 continue
             else:
                 for j in range(0, 2+1):
                     if no_disk:
-                        plt.stairs(sputtered[:,j][1:], d_arr, label=labels[j] + rf", total = {np.sum(sputtered[:,j][1:]):.1e} $M_\odot$", linewidth=2)
+                        plt.stairs(dtgr[:,j][1:], d_arr, label=labels[j], linewidth=2)
                     else:
-                        plt.stairs(sputtered[:,j], d_arr, label=labels[j] + rf", total = {np.sum(sputtered[:,j][1:]):.1e} $M_\odot$", linewidth=2)
-                    print(f"{labels[j]} {substr} total mass at {round(tmaxs[tmax_i]/1e3, 1):.2e} Myr: {np.sum(sputtered[:,j][1:]):.2e} M_sun")
-                print("\n")
-                plt.title(f"cumulative {substr} mass, $t={round(tmaxs[tmax_i]/1e3, 1)}$ Myr")
+                        plt.stairs(dtgr[:,j], d_arr, label=labels[j], linewidth=2)
+
+                plt.title(f"dust to gas ratio, {dust_substr}, $t={round(tmaxs[tmax_i]/1e3, 1)}$ Myr")
                 plt.yscale('log')
-                plt.ylabel(r"$log_{10}(M~[M_\odot])$")
+                plt.ylabel(r"$m_\mathrm{dust}/m_\mathrm{gas}$")
                 plt.xlabel(r"$r~[kpc]$")
-                plt.ylim(1e-6, 5e7)
-                plt.legend()
+                plt.ylim(1e-3, 1.5e-2)
+                plt.legend(loc="upper right")
                 if mypc:
                     plt.savefig(os.path.join(basedir, "no_disk", substr, f"{int(tmaxs[tmax_i]/1e3)}_{substr}.png"), dpi=300)
                 else:
