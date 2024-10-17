@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 from hconfig import *
 KB = 1.3806e-16  # Boltzmann constant, cm^2 g / s^2 K
 
-fnum = 800
-phase = "cold"
-date = "2024-08-28"
+fnum = 500
+phase = "hot"
+date = "2024-08-29"
 N_bins = 80
-weight = "vweight"
+weight = "dweight"
 
 if date == "2024-08-28":
     f_name = f"{fnum}_prof_m82_{phase}_{weight}.txt"
