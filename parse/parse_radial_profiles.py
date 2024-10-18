@@ -5,16 +5,17 @@ import matplotlib.pyplot as plt
 from hconfig import *
 KB = 1.3806e-16  # Boltzmann constant, cm^2 g / s^2 K
 
-fnum = 500
-phase = "hot"
-date = "2024-08-29"
+fnum = 800
+phase = "cold"
+date = "2024-08-28"
 N_bins = 80
-weight = "dweight"
+weight = "vweight"
+r_mask = 1
 
 if date == "2024-08-28":
-    f_name = f"{fnum}_prof_m82_{phase}_{weight}.txt"
+    f_name = f"{fnum}_prof_m82_{phase}_{weight}_75.txt"
 if date == "2024-08-29":
-    f_name = f"{fnum}_prof_highz_{phase}_{weight}.txt"
+    f_name = f"{fnum}_prof_highz_{phase}_{weight}_75.txt"
 
 basedir = f"/Users/helenarichie/Desktop/{date}/profiles/post/"
 
@@ -145,18 +146,23 @@ mach_color = "plum"
 linewidth = 1.75
 
 bin_tot = np.array(bin_tot)
+m_gas = np.array(m_gas)
+m_dust_0 = np.array(m_dust_0)
+m_dust_1 = np.array(m_dust_1)
+m_dust_2 = np.array(m_dust_2)
+m_dust_3 = np.array(m_dust_3)
 
-plt.semilogy(bin_tot, m_gas, c=density_color, linewidth=linewidth)
+plt.semilogy(bin_tot[bin_tot>r_mask], m_gas[bin_tot>r_mask], c=density_color, linewidth=linewidth)
 plt.title(f"total {phase} gas mass")
 plt.xlabel("r [kpc]")
 plt.ylabel(r"$m_{gas}$ $[M_\odot]$")
 plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_{phase}_total.png"), dpi=300)
 plt.close()
 
-plt.semilogy(bin_tot, m_dust_0, linewidth=linewidth, label=r"1 $\mu$m")
-plt.semilogy(bin_tot, m_dust_1, linewidth=linewidth, label=r"0.1 $\mu$m")
-plt.semilogy(bin_tot, m_dust_2, linewidth=linewidth, label=r"0.01 $\mu$m")
-plt.semilogy(bin_tot, m_dust_3, linewidth=linewidth, label=r"0.001 $\mu$m")
+plt.semilogy(bin_tot[bin_tot>r_mask], m_dust_0[bin_tot>r_mask], linewidth=linewidth, label=r"1 $\mu$m")
+plt.semilogy(bin_tot[bin_tot>r_mask], m_dust_1[bin_tot>r_mask], linewidth=linewidth, label=r"0.1 $\mu$m")
+plt.semilogy(bin_tot[bin_tot>r_mask], m_dust_2[bin_tot>r_mask], linewidth=linewidth, label=r"0.01 $\mu$m")
+plt.semilogy(bin_tot[bin_tot>r_mask], m_dust_3[bin_tot>r_mask], linewidth=linewidth, label=r"0.001 $\mu$m")
 plt.legend()
 plt.title("total dust mass")
 plt.xlabel("r [kpc]")
@@ -164,11 +170,11 @@ plt.ylabel(r"$m_{dust}$ $[M_\odot]$")
 plt.savefig(os.path.join(basedir, "png", f"{fnum}_dust_total_{phase}_{weight}.png"), dpi=300)
 plt.close()
 
-print(f"Total gas mass: {np.sum(m_gas):e} M_sun")
-print(f"Total 1 micron dust mass: {np.sum(m_dust_0):e} M_sun")
-print(f"Total 0.1 micron dust mass: {np.sum(m_dust_1):e} M_sun")
-print(f"Total 0.01 micron dust mass: {np.sum(m_dust_2):e} M_sun")
-print(f"Total 0.001 micron dust mass: {np.sum(m_dust_3):e} M_sun")
+print(f"Total gas mass: {np.sum(m_gas[bin_tot>r_mask]):e} M_sun")
+print(f"Total 1 micron dust mass: {np.sum(m_dust_0[bin_tot>r_mask]):e} M_sun")
+print(f"Total 0.1 micron dust mass: {np.sum(m_dust_1[bin_tot>r_mask]):e} M_sun")
+print(f"Total 0.01 micron dust mass: {np.sum(m_dust_2[bin_tot>r_mask]):e} M_sun")
+print(f"Total 0.001 micron dust mass: {np.sum(m_dust_3[bin_tot>r_mask]):e} M_sun")
 
 def n_hot(r, n1):
     return n1 * r ** (-0.05 * r - 1.08)
