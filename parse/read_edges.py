@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0, "/ccs/home/helenarichie/code/my_scripts/")
 from hconfig import *
 from csv import writer
 
@@ -7,16 +9,16 @@ def calc_mass_loss_rate(rho, v, area):
 density_conversion = 5.028e-34/(3.24e-22)**3 # g/cm^3 to M_sun/kpc^3
 
 ################################################################
-date = "2024-06-13"
-rho_cl_i = 1e-23  # needed to index cloud material
+date = "2024-08-28"
+rho_cl_i = 1e-24  # needed to index cloud material
 cutoff = rho_cl_i*density_conversion/3 # M_sun/kpc^3
 ns = 0
-ne = 700
+ne = 994
 DE = True
 SCALAR = True
 ################################################################
 
-basedir = f"/ix/eschneider/helena/data/cloud_wind/{date}/"
+basedir = f"/gpfs/alpine2/ast200/proj-shared/helena/{date}/"
 datadir = os.path.join(basedir, "hdf5/edges/")
 csvdir = os.path.join(basedir, "csv/")
 
