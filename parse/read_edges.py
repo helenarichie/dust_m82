@@ -49,11 +49,11 @@ dx, dy, dz = head["dx"]
 files = glob.glob(os.path.join(datadir, "*.h5"))
 
 n_faces = 6
-ns_gas = 8
-ns_dust_0 = 4
-ns_dust_1 = 5
-ns_dust_2 = 6
-ns_dust_3 = 7
+ns_gas = 7
+ns_dust_0 = 3
+ns_dust_1 = 4
+ns_dust_2 = 5
+ns_dust_3 = 6
 
 ms = ["mz_minus_xy", "my_minus_xz", "mx_minus_yz", "mz_plus_xy", "my_plus_xz", "mx_plus_yz"]
 
