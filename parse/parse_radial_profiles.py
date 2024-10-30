@@ -5,17 +5,18 @@ import matplotlib.pyplot as plt
 from hconfig import *
 KB = 1.3806e-16  # Boltzmann constant, cm^2 g / s^2 K
 
-fnum = 800
+fnum = 600
 phase = "cold"
 date = "2024-08-28"
 N_bins = 80
-weight = "vweight"
-r_mask = 1
+weight = "dweight"
+r_mask = 0
+tail = "_75"
 
 if date == "2024-08-28":
-    f_name = f"{fnum}_prof_m82_{phase}_{weight}_75.txt"
+    f_name = f"{fnum}_prof_m82_{phase}_{weight}{tail}.txt"
 if date == "2024-08-29":
-    f_name = f"{fnum}_prof_highz_{phase}_{weight}_75.txt"
+    f_name = f"{fnum}_prof_highz_{phase}_{weight}{tail}.txt"
 
 basedir = f"/Users/helenarichie/Desktop/{date}/profiles/post/"
 
@@ -156,7 +157,7 @@ plt.semilogy(bin_tot[bin_tot>r_mask], m_gas[bin_tot>r_mask], c=density_color, li
 plt.title(f"total {phase} gas mass")
 plt.xlabel("r [kpc]")
 plt.ylabel(r"$m_{gas}$ $[M_\odot]$")
-plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_{phase}_total.png"), dpi=300)
+plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_{phase}_total{tail}.png"), dpi=300)
 plt.close()
 
 plt.semilogy(bin_tot[bin_tot>r_mask], m_dust_0[bin_tot>r_mask], linewidth=linewidth, label=r"1 $\mu$m")
@@ -167,7 +168,7 @@ plt.legend()
 plt.title("total dust mass")
 plt.xlabel("r [kpc]")
 plt.ylabel(r"$m_{dust}$ $[M_\odot]$")
-plt.savefig(os.path.join(basedir, "png", f"{fnum}_dust_total_{phase}_{weight}.png"), dpi=300)
+plt.savefig(os.path.join(basedir, "png", f"{fnum}_dust_total_{phase}_{weight}{tail}.png"), dpi=300)
 plt.close()
 
 print(f"Total gas mass: {np.sum(m_gas[bin_tot>r_mask]):e} M_sun")
@@ -193,7 +194,7 @@ plt.legend()
 plt.title("gas number density")
 plt.xlabel("r [kpc]")
 plt.ylabel(r"$n_{gas}$ $[cm^{-3}]$")
-plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_density_{phase}_{weight}.png"), dpi=300)
+plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_density_{phase}_{weight}{tail}.png"), dpi=300)
 plt.close()
 
 plt.semilogy(bin_tot, v_avg, c=velocity_color, label="avg", linewidth=linewidth)
@@ -203,7 +204,7 @@ plt.legend()
 plt.title("gas velocity")
 plt.xlabel("r [kpc]")
 plt.ylabel(r"$v_{gas}$ $[km\,s^{-1}]$")
-plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_velocity_{phase}_{weight}.png"), dpi=300)
+plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_velocity_{phase}_{weight}{tail}.png"), dpi=300)
 plt.close()
 
 plt.plot(bin_tot, np.log10(P_avg), c=pressure_color, label="avg", linewidth=linewidth)
@@ -213,7 +214,7 @@ plt.legend()
 plt.title("pressure")
 plt.xlabel("r [kpc]")
 plt.ylabel(r"$P/k_B~[K~cm^{-3}]$")
-plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_pressure_{phase}_{weight}.png"), dpi=300)
+plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_pressure_{phase}_{weight}{tail}.png"), dpi=300)
 plt.close()
 
 plt.plot(bin_tot, np.log10(temp_avg), c=temperature_color, label="avg", linewidth=linewidth)
@@ -224,7 +225,7 @@ plt.legend()
 plt.title("gas temperature")
 plt.xlabel("r [kpc]")
 plt.ylabel(r"$\log(T_{gas}$ $[K]$)")
-plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_temp_{phase}_{weight}.png"), dpi=300)
+plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_temp_{phase}_{weight}{tail}.png"), dpi=300)
 plt.close()
 
 plt.plot(bin_tot, M_avg, c=mach_color, label="avg", linewidth=linewidth)
@@ -235,7 +236,7 @@ plt.legend()
 plt.title("Mach number")
 plt.xlabel("r [kpc]")
 plt.ylabel(r"$M$")
-plt.savefig(os.path.join(basedir, "png", f"{fnum}_mach_{phase}_{weight}.png"), dpi=300)
+plt.savefig(os.path.join(basedir, "png", f"{fnum}_mach_{phase}_{weight}{tail}.png"), dpi=300)
 plt.close()
 
 plt.semilogy(bin_tot, S_avg, c=entropy_color, label="avg", linewidth=linewidth)
@@ -245,5 +246,5 @@ plt.legend()
 plt.title("entropy")
 plt.xlabel("r [kpc]")
 plt.ylabel(r"$S/k_B~[K\,cm^{-3}]$")
-plt.savefig(os.path.join(basedir, "png", f"{fnum}_entropy_{phase}_{weight}.png"), dpi=300)
+plt.savefig(os.path.join(basedir, "png", f"{fnum}_entropy_{phase}_{weight}{tail}.png"), dpi=300)
 plt.close()
