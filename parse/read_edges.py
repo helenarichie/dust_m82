@@ -12,8 +12,8 @@ density_conversion = 5.028e-34/(3.24e-22)**3 # g/cm^3 to M_sun/kpc^3
 date = "2024-08-29"
 rho_cl_i = 1e-24  # needed to index cloud material
 cutoff = rho_cl_i*density_conversion/3 # M_sun/kpc^3
-ns = 200
-ne = 200
+ns = 0
+ne = 1000
 ################################################################
 
 basedir = f"/gpfs/alpine2/ast200/proj-shared/helena/{date}/"
@@ -38,13 +38,29 @@ time_csv_str = "time_output_{:.0e}.csv".format(rho_cl_i)
 if ns == 0:
     f = open(os.path.join(csvdir, cloud_csv_str), "w")
     f.close()
-    f = open(os.path.join(csvdir, dust_0_csv_str), "w")
+    f = open(os.path.join(csvdir, dust_0_hot_csv_str), "w")
     f.close()
-    f = open(os.path.join(csvdir, dust_1_csv_str), "w")
+    f = open(os.path.join(csvdir, dust_0_mixed_csv_str), "w")
     f.close()
-    f = open(os.path.join(csvdir, dust_2_csv_str), "w")
+    f = open(os.path.join(csvdir, dust_0_cool_csv_str), "w")
     f.close()
-    f = open(os.path.join(csvdir, dust_3_csv_str), "w")
+    f = open(os.path.join(csvdir, dust_1_hot_csv_str), "w")
+    f.close()
+    f = open(os.path.join(csvdir, dust_1_mixed_csv_str), "w")
+    f.close()
+    f = open(os.path.join(csvdir, dust_1_cool_csv_str), "w")
+    f.close()
+    f = open(os.path.join(csvdir, dust_2_hot_csv_str), "w")
+    f.close()
+    f = open(os.path.join(csvdir, dust_2_mixed_csv_str), "w")
+    f.close()
+    f = open(os.path.join(csvdir, dust_2_cool_csv_str), "w")
+    f.close()
+    f = open(os.path.join(csvdir, dust_3_hot_csv_str), "w")
+    f.close()
+    f = open(os.path.join(csvdir, dust_3_mixed_csv_str), "w")
+    f.close()
+    f = open(os.path.join(csvdir, dust_3_cool_csv_str), "w")
     f.close()
     f = open(os.path.join(csvdir, time_csv_str), "w")
     f.close()
