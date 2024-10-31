@@ -1,6 +1,5 @@
 import sys
-# sys.path.insert(0, "/ccs/home/helenarichie/code/my_scripts/")
-sys.path.insert(0, "/Users/helenarichie/GitHub/my_scripts/")
+sys.path.insert(0, "/ccs/home/helenarichie/code/my_scripts/")
 from hconfig import *
 from csv import writer
 
@@ -10,17 +9,16 @@ def calc_mass_loss_rate(rho, v, area):
 density_conversion = 5.028e-34/(3.24e-22)**3 # g/cm^3 to M_sun/kpc^3
 
 ################################################################
-date = "edges"
+date = "2024-08-28"
 rho_cl_i = 1e-24  # needed to index cloud material
 cutoff = rho_cl_i*density_conversion/3 # M_sun/kpc^3
-ns = 200
-ne = 200
+ns = 0
+ne = 992
 ################################################################
 
-# basedir = f"/gpfs/alpine2/ast200/proj-shared/helena/{date}/"
-# datadir = os.path.join(basedir, "hdf5/edges/")
-# csvdir = os.path.join(basedir, "csv/")
-basedir = datadir = csvdir = "/Users/helenarichie/Desktop/edges/"
+basedir = f"/gpfs/alpine2/ast200/proj-shared/helena/{date}/"
+datadir = os.path.join(basedir, "hdf5/edges/")
+csvdir = os.path.join(basedir, "csv/")
 
 cloud_csv_str = "rate_cloud_{:.0e}.csv".format(rho_cl_i)
 dust_0_hot_csv_str = "rate_dust_0_hot_{:.0e}.csv".format(rho_cl_i)
@@ -37,7 +35,7 @@ dust_3_mixed_csv_str = "rate_dust_3_mixed_{:.0e}.csv".format(rho_cl_i)
 dust_3_cool_csv_str = "rate_dust_3_cool_{:.0e}.csv".format(rho_cl_i)
 time_csv_str = "time_output_{:.0e}.csv".format(rho_cl_i)
 
-if ns == 0 or ns == 200:
+if ns == 0:
     f = open(os.path.join(csvdir, cloud_csv_str), "w")
     f.close()
     f = open(os.path.join(csvdir, dust_0_hot_csv_str), "w")
@@ -67,8 +65,7 @@ if ns == 0 or ns == 200:
     f = open(os.path.join(csvdir, time_csv_str), "w")
     f.close()
 
-# f = h5py.File(os.path.join(datadir, "0_edges.h5"))
-f = h5py.File(os.path.join(datadir, "200_edges.h5"))
+f = h5py.File(os.path.join(datadir, "0_edges.h5"))
 head = f.attrs
 nx, ny, nz = head["dims"]
 dx, dy, dz = head["dx"]
