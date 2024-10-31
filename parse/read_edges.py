@@ -180,9 +180,9 @@ for n in range(ns, ne+1):
             mask_mixed = np.logical_and(np.logical_and(np.logical_and(temp <= 2e4, temp < 5e5), dust_3 >= 0), velocity > 0)
             mask_cool = np.logical_and(np.logical_and(temp < 2e4, dust_3 >= 0), velocity > 0)
 
-        rates_dust_3_hot.append(calc_mass_loss_rate(dust_2[mask_hot], velocity[mask_hot], dx**2))
-        rates_dust_3_mixed.append(calc_mass_loss_rate(dust_2[mask_mixed], velocity[mask_mixed], dx**2))
-        rates_dust_3_cool.append(calc_mass_loss_rate(dust_2[mask_cool], velocity[mask_cool], dx**2))
+        rates_dust_3_hot.append(calc_mass_loss_rate(dust_3[mask_hot], velocity[mask_hot], dx**2))
+        rates_dust_3_mixed.append(calc_mass_loss_rate(dust_3[mask_mixed], velocity[mask_mixed], dx**2))
+        rates_dust_3_cool.append(calc_mass_loss_rate(dust_3[mask_cool], velocity[mask_cool], dx**2))
 
     with open(os.path.join(csvdir, cloud_csv_str), "a") as f:
         writer_obj = writer(f)
