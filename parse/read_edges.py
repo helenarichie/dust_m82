@@ -1,5 +1,6 @@
 import sys
 sys.path.insert(0, "/ccs/home/helenarichie/code/my_scripts/")
+# sys.path.insert(0, "/Users/helenarichie/GitHub/my_scripts/")
 from hconfig import *
 from csv import writer
 
@@ -13,12 +14,16 @@ date = "2024-08-28"
 rho_cl_i = 1e-24  # needed to index cloud material
 cutoff = rho_cl_i*density_conversion/3 # M_sun/kpc^3
 ns = 0
-ne = 992
+ne = 0
 ################################################################
 
 basedir = f"/gpfs/alpine2/ast200/proj-shared/helena/{date}/"
 datadir = os.path.join(basedir, "hdf5/edges/")
 csvdir = os.path.join(basedir, "csv/")
+"""
+basedir = "/Users/helenarichie/Desktop/edges/"
+datadir = csvdir = basedir
+"""
 
 cloud_csv_str = "rate_cloud_{:.0e}.csv".format(rho_cl_i)
 dust_0_hot_csv_str = "rate_dust_0_hot_{:.0e}.csv".format(rho_cl_i)
@@ -110,13 +115,37 @@ for n in range(ns, ne+1):
     rates_dust_3_hot, rates_dust_3_mixed, rates_dust_3_cool = [], [], []
 
     for i, key in enumerate(keys_gas):
+        print(i)
         velocity, mask = None, None
+
+        disk_lower = int(9 / dx)  # index that disk starts at, 9 kpc
+        disk_upper = int(11 / dx)  # index that disk ends at, 11 kpc
+        print(disk_lower, disk_upper)
+        print(nx, ny, nz)
 
         gas = fh5[keys_gas[i]][()]
         dust_0 = fh5[keys_dust_0[i]][()]
         dust_1 = fh5[keys_dust_1[i]][()]
         dust_2 = fh5[keys_dust_2[i]][()]
         dust_3 = fh5[keys_dust_3[i]][()]
+
+        energy = fh5[keys_energy[i]][()]
+        mx = fh5[keys_mx[i]][()]
+        my = fh5[keys_my[i]][()]
+        mz = fh5[keys_mz[i]][()]
+        momentum_perp = fh5[ms[i]]
+
+        if (i == 1) or (i == 4) or (i == 2) or (i == 5):
+            gas = np.delete(gas, np.s_[disk_lower:disk_upper], axis=1)
+            dust_0 = np.delete(dust_0, np.s_[disk_lower:disk_upper], axis=1)
+            dust_1 = np.delete(dust_1, np.s_[disk_lower:disk_upper], axis=1)
+            dust_2 = np.delete(dust_2, np.s_[disk_lower:disk_upper], axis=1)
+            dust_3 = np.delete(dust_3, np.s_[disk_lower:disk_upper], axis=1)
+            energy = np.delete(energy, np.s_[disk_lower:disk_upper], axis=1)
+            mx = np.delete(mx, np.s_[disk_lower:disk_upper], axis=1)
+            my = np.delete(my, np.s_[disk_lower:disk_upper], axis=1)
+            mz = np.delete(mz, np.s_[disk_lower:disk_upper], axis=1)
+            momentum_perp = np.delete(momentum_perp, np.s_[disk_lower:disk_upper], axis=1)
 
         def calc_temp(gamma, mu, mp, kb, density, energy, momentum_x, momentum_y, momentum_z, energy_unit, velocity_unit, density_unit):
             n = (density * density_unit) / (mu * mp)
@@ -128,25 +157,25 @@ for n in range(ns, ne+1):
             n = density * density_unit / (mu * mp)
             return gas_energy * (gamma - 1) * pressure_unit / (n * kb)
         
-        temp = calc_temp(gamma, 0.6, MP, KB, gas, fh5[keys_energy[i]][()], fh5[keys_mx[i]][()], fh5[keys_my[i]][()], fh5[keys_mz[i]][()], energy_unit, velocity_unit, density_unit)
+        temp = calc_temp(gamma, 0.6, MP, KB, gas, energy, mx, my, mz, energy_unit, velocity_unit, density_unit)
         # temp = calc_temp_DE(gamma, 0.6, MP, KB, gas, fh5[keys_energy[i]][()], density_unit, pressure_unit
 
         if i <= 2:
-            velocity = fh5[ms[i]] / gas
+            velocity = momentum_perp / gas
             mask = np.logical_and(gas >= cutoff, velocity < 0)
         if i > 2:
-            velocity = fh5[ms[i]] / gas
+            velocity = momentum_perp / gas
             mask = np.logical_and(gas >= cutoff, velocity > 0)
 
         rates_cloud.append(calc_mass_loss_rate(gas[mask], velocity[mask], dx**2))
 
         if i <= 2:
-            velocity = fh5[ms[i]] / gas
+            velocity = momentum_perp / gas
             mask_hot = np.logical_and(np.logical_and(temp >= 5e5, dust_0 >= 0), velocity < 0)
             mask_mixed = np.logical_and(np.logical_and(np.logical_and(temp >= 2e4, temp < 5e5), dust_0 >= 0), velocity < 0)
             mask_cool = np.logical_and(np.logical_and(temp < 2e4, dust_0 >= 0), velocity < 0)
         if i > 2:
-            velocity = fh5[ms[i]] / gas
+            velocity = momentum_perp / gas
             mask_hot = np.logical_and(np.logical_and(temp >= 5e5, dust_0 >= 0), velocity > 0)
             mask_mixed = np.logical_and(np.logical_and(np.logical_and(temp >= 2e4, temp < 5e5), dust_0 >= 0), velocity > 0)
             mask_cool = np.logical_and(np.logical_and(temp < 2e4, dust_0 >= 0), velocity > 0)
@@ -156,12 +185,12 @@ for n in range(ns, ne+1):
         rates_dust_0_cool.append(calc_mass_loss_rate(dust_0[mask_cool], velocity[mask_cool], dx**2))
 
         if i <= 2:
-            velocity = fh5[ms[i]] / gas
+            velocity = momentum_perp / gas
             mask_hot = np.logical_and(np.logical_and(temp >= 5e5, dust_1 >= 0), velocity < 0)
             mask_mixed = np.logical_and(np.logical_and(np.logical_and(temp >= 2e4, temp < 5e5), dust_1 >= 0), velocity < 0)
             mask_cool = np.logical_and(np.logical_and(temp < 2e4, dust_1 >= 0), velocity < 0)
         if i > 2:
-            velocity = fh5[ms[i]] / gas
+            velocity = momentum_perp / gas
             mask_hot = np.logical_and(np.logical_and(temp >= 5e5, dust_1 >= 0), velocity > 0)
             mask_mixed = np.logical_and(np.logical_and(np.logical_and(temp >= 2e4, temp < 5e5), dust_1 >= 0), velocity > 0)
             mask_cool = np.logical_and(np.logical_and(temp < 2e4, dust_1 >= 0), velocity > 0)
@@ -171,12 +200,12 @@ for n in range(ns, ne+1):
         rates_dust_1_cool.append(calc_mass_loss_rate(dust_1[mask_cool], velocity[mask_cool], dx**2))
 
         if i <= 2:
-            velocity = fh5[ms[i]] / gas
+            velocity = momentum_perp / gas
             mask_hot = np.logical_and(np.logical_and(temp >= 5e5, dust_2 >= 0), velocity < 0)
             mask_mixed = np.logical_and(np.logical_and(np.logical_and(temp >= 2e4, temp < 5e5), dust_2 >= 0), velocity < 0)
             mask_cool = np.logical_and(np.logical_and(temp < 2e4, dust_2 >= 0), velocity < 0)
         if i > 2:
-            velocity = fh5[ms[i]] / gas
+            velocity = momentum_perp / gas
             mask_hot = np.logical_and(np.logical_and(temp >= 5e5, dust_2 >= 0), velocity > 0)
             mask_mixed = np.logical_and(np.logical_and(np.logical_and(temp >= 2e4, temp < 5e5), dust_2 >= 0), velocity > 0)
             mask_cool = np.logical_and(np.logical_and(temp < 2e4, dust_2 >= 0), velocity > 0)
@@ -186,12 +215,12 @@ for n in range(ns, ne+1):
         rates_dust_2_cool.append(calc_mass_loss_rate(dust_2[mask_cool], velocity[mask_cool], dx**2))
 
         if i <= 2:
-            velocity = fh5[ms[i]] / gas
+            velocity = momentum_perp / gas
             mask_hot = np.logical_and(np.logical_and(temp >= 5e5, dust_3 >= 0), velocity < 0)
             mask_mixed = np.logical_and(np.logical_and(np.logical_and(temp >= 2e4, temp < 5e5), dust_3 >= 0), velocity < 0)
             mask_cool = np.logical_and(np.logical_and(temp < 2e4, dust_3 >= 0), velocity < 0)
         if i > 2:
-            velocity = fh5[ms[i]] / gas
+            velocity = momentum_perp / gas
             mask_hot = np.logical_and(np.logical_and(temp >= 5e5, dust_3 >= 0), velocity > 0)
             mask_mixed = np.logical_and(np.logical_and(np.logical_and(temp >= 2e4, temp < 5e5), dust_3 >= 0), velocity > 0)
             mask_cool = np.logical_and(np.logical_and(temp < 2e4, dust_3 >= 0), velocity > 0)
