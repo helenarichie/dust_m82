@@ -11,13 +11,12 @@ if mypc:
     sys.path.insert(0, "/Users/helenarichie/GitHub/my_scripts/")
 from hconfig import *
 
-date = "2024-08-28"
+date = "2024-10-25"
 tmaxs = np.linspace(0, 50000, 101)
 
-substr = "gas"
-# ymax = 3e8  # high-z gas
-ymax = 4e7  # m82 gas
-# ymax = 3e6  # high-z dust
+substr = "dust_3"
+# ymax = 4e8  # high-z gas
+ymax = 3e6  # high-z dust
 # ymax = 2e4  # m82 dust
 no_disk = True
 disk_i = 1
@@ -26,7 +25,7 @@ disk_i = 1
 debugging = False
 cloud_wind = False
 testing = False
-m82 = True
+m82 = False
 #################################
 
 if crc:
@@ -41,10 +40,9 @@ if crc:
 if frontier:
   basedir = f"/lustre/orion/ast181/scratch/helenarichie/{date}/"
 if mypc:
-  basedir = f"/Users/helenarichie/Desktop/{date}/profiles/in_situ/"
+  basedir = f"/Users/helenarichie/Desktop/{date}/profiles/vertical/"
 
 csvdir = os.path.join(basedir, "csv/")
-
 
 d_arr = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 if no_disk:
@@ -82,7 +80,7 @@ with open(os.path.join(csvdir, f"{substr}.csv")) as f:
             plt.legend()
             plt.tick_params(top=True, right=True, which="both")
             if mypc:
-                plt.savefig(os.path.join(basedir, "no_disk", substr, f"{int(tmaxs[tmax_i]/500)}_{substr}.png"), dpi=300)
+                plt.savefig(os.path.join(basedir, "png", substr, f"{int(tmaxs[tmax_i]/500)}_{substr}.png"), dpi=300)
             else:
                 plt.savefig(f"../png/{substr}/{int(tmaxs[tmax_i]/1e3)/500}_{substr}.png", dpi=300)
             plt.close()

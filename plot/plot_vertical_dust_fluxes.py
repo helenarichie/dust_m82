@@ -8,7 +8,7 @@ plt.rcParams.update({'font.family': 'Helvetica'})
 fontsize = 20
 plt.rcParams.update({'font.size': fontsize})
 
-date = "2024-08-28"
+date = "2024-08-29"
 fields = ["dust_0", "dust_1", "dust_2", "dust_3"]
 
 if date == "2024-08-28":
