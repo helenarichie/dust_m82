@@ -126,10 +126,10 @@ def main(basedir, fnum, simulation, tail, r_mask, mode):
     if mode == "dark":
         plt.style.use('dark_background')
 
-    plt.plot(bins[bins>r_mask], gas_rate_hot[bins>r_mask], c=hot_color, linewidth=linewidth, label="hot")
-    plt.plot(bins[bins>r_mask], gas_rate_mixed[bins>r_mask], c=mixed_color, linewidth=linewidth, label="mixed")
-    plt.plot(bins[bins>r_mask], gas_rate_cool[bins>r_mask], c=cool_color, linewidth=linewidth, label="cool")
-    plt.plot(bins[bins>r_mask], gas_rate_cool[bins>r_mask]+gas_rate_mixed[bins>r_mask]+gas_rate_hot[bins>r_mask], c=tot_color, linewidth=linewidth, label="tot")
+    plt.plot(bins[bins>r_mask], gas_rate_hot[bins>r_mask] * 1e-3, c=hot_color, linewidth=linewidth, label="hot")
+    plt.plot(bins[bins>r_mask], gas_rate_mixed[bins>r_mask] * 1e-3, c=mixed_color, linewidth=linewidth, label="mixed")
+    plt.plot(bins[bins>r_mask], gas_rate_cool[bins>r_mask] * 1e-3, c=cool_color, linewidth=linewidth, label="cool")
+    plt.plot(bins[bins>r_mask], (gas_rate_cool[bins>r_mask]+gas_rate_mixed[bins>r_mask]+gas_rate_hot[bins>r_mask]) * 1e-3, c=tot_color, linewidth=linewidth, label="tot")
     plt.title(rf"$t={round(time, 1)}$ Myr")
     plt.xlabel("r [kpc]")
     plt.ylabel(r"$\dot{M}$ $[M_\odot\,yr^{-1}]$")
@@ -188,8 +188,6 @@ def main(basedir, fnum, simulation, tail, r_mask, mode):
     plt.tight_layout()
     plt.savefig(os.path.join(basedir, "png", f"{fnum}_hot_outflow{tail}.png"), dpi=300)
     plt.close()
-
-    print(dust_1_rate_mixed[bins>r_mask])
 
     plt.plot(bins[bins>r_mask], dust_1_rate_mixed[bins>r_mask], c=color_mixed, linewidth=linewidth, linestyle=styles[1])
     plt.plot(bins[bins>r_mask], dust_2_rate_mixed[bins>r_mask], c=color_mixed, linewidth=linewidth, linestyle=styles[2])
