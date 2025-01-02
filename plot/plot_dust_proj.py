@@ -40,6 +40,7 @@ def main(basedir, ns, ne, mode):
     cbar_width = 0.3
     fig_width = len(fields) * panel_width + cbar_width
     cbar_gridspec = (panel_width + cbar_width) / panel_width
+    time_x, time_y = 8, 19
 
     # define physical constants
     mu = 0.6 # mean molecular weight
@@ -77,7 +78,7 @@ def main(basedir, ns, ne, mode):
             ax[i].set_xticks(xticks)
             ax[i].set_yticks(yticks)
             
-            if i == 1:
+            if i == 0:
                 ax[i].hlines(sbar_y, sbar_x, sbar_x + (xticks[1] - xticks[0]), linewidth=linewidth, colors="white")
                 ax[i].text(sbar_x - 0.2, sbar_y, sbar_label, ha="right", va="center", color="white")
             
@@ -87,7 +88,7 @@ def main(basedir, ns, ne, mode):
                 cbar = fig.colorbar(im, ax=ax[i], cax=cax)
                 cbar.set_label(clabel)
                 cbar.ax.tick_params(axis="y", direction="in", color="white")
-
+                ax[i].text(time_x, time_y, f"{t/1e3:.0f} Myr", ha="left", va="center", color="white")
 
         fig.savefig(pngdir + f"/{fnum}_dust_proj.png", dpi=300, bbox_inches="tight")
         plt.close()
