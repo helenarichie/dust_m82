@@ -110,7 +110,7 @@ def main(basedir, field_names, fig_name, mode):
     ax[0].set_xlabel(r"$t~[Myr]$", fontsize=20)
     ax[0].set_xlim(xmin, xmax)
     ax[0].set_ylim(ymin, ymax)
-    ax[0].vlines(30, ymin=ymin, ymax=ymax, linewidth=linewidth-0.5, zorder=0, color="lightgrey", alpha=0.7)
+    # ax[0].vlines(30, ymin=ymin, ymax=ymax, linewidth=linewidth-0.5, zorder=0, color="lightgrey", alpha=0.7)
 
     for i, grain in enumerate(field_names):
         ax[1].plot(time_output/1e3, mass_out_mixed[i], linestyle=styles[i], linewidth=linewidth, c=color_mixed)
@@ -119,7 +119,7 @@ def main(basedir, field_names, fig_name, mode):
     ax[1].set_xlabel(r"$t~[Myr]$", fontsize=20)
     ax[1].set_xlim(xmin, xmax)
     ax[1].set_ylim(ymin, ymax)
-    ax[1].vlines(30, ymin=ymin, ymax=ymax, linewidth=linewidth-0.5, zorder=0, color="lightgrey", alpha=0.7)
+    # ax[1].vlines(30, ymin=ymin, ymax=ymax, linewidth=linewidth-0.5, zorder=0, color="lightgrey", alpha=0.7)
 
     for i, grain in enumerate(field_names):
         ax[2].plot(time_output/1e3, mass_out_cool[i], linestyle=styles[i], linewidth=linewidth, c=color_cool)
@@ -128,7 +128,7 @@ def main(basedir, field_names, fig_name, mode):
     ax[2].set_xlabel(r"$t~[Myr]$", fontsize=20)
     ax[2].set_xlim(xmin, xmax)
     ax[2].set_ylim(ymin, ymax)
-    ax[2].vlines(30, ymin=ymin, ymax=ymax, linewidth=linewidth-0.5, zorder=0, color="lightgrey", alpha=0.7)
+    # ax[2].vlines(30, ymin=ymin, ymax=ymax, linewidth=linewidth-0.5, zorder=0, color="lightgrey", alpha=0.7)
     for i, name in enumerate(field_names):
         if name == "dust_0":
             ax[2].plot(0, 0, linestyle=styles[i], label=r"$a=1~\mu$m", c="k", linewidth=linewidth)

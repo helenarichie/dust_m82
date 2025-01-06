@@ -113,7 +113,7 @@ def main(basedir, fnum, simulation, tail, r_mask, mode):
     gas_color = "mediumturquoise"
     energy_color = "mediumorchid"
     momentum_color = "palevioletred"
-    linewidth = 3
+    linewidth = 2
     hot_style = "solid"
     mixed_style = "dashed"
     cool_style = "dashdot"
@@ -126,105 +126,91 @@ def main(basedir, fnum, simulation, tail, r_mask, mode):
     if mode == "dark":
         plt.style.use('dark_background')
 
+    fig, ax = plt.subplots(3, 1, figsize=(5, 10), sharex=True)
+
     # *1e-3 converts rate from per kyr to per year
-    plt.plot(bins[bins>r_mask], gas_rate_hot[bins>r_mask] * 1e-3, c=hot_color, linewidth=linewidth, label="hot")
-    plt.plot(bins[bins>r_mask], gas_rate_mixed[bins>r_mask] * 1e-3, c=mixed_color, linewidth=linewidth, label="mixed")
-    plt.plot(bins[bins>r_mask], gas_rate_cool[bins>r_mask] * 1e-3, c=cool_color, linewidth=linewidth, label="cool")
-    plt.plot(bins[bins>r_mask], (gas_rate_cool[bins>r_mask]+gas_rate_mixed[bins>r_mask]+gas_rate_hot[bins>r_mask]) * 1e-3, c=tot_color, linewidth=linewidth, label="tot")
-    plt.title(rf"$t={round(time, 1)}$ Myr")
-    plt.xlabel("r [kpc]")
-    plt.ylabel(r"$\dot{M}$ $[M_\odot\,yr^{-1}]$")
-    plt.legend()
-    plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_outflow{tail}.png"), dpi=300)
-    plt.close()
+    ax[0].plot(bins[bins>r_mask], gas_rate_hot[bins>r_mask] * 1e-3, c=hot_color, linewidth=linewidth, label="hot")
+    ax[0].plot(bins[bins>r_mask], gas_rate_mixed[bins>r_mask] * 1e-3, c=mixed_color, linewidth=linewidth, label="mixed")
+    ax[0].plot(bins[bins>r_mask], gas_rate_cool[bins>r_mask] * 1e-3, c=cool_color, linewidth=linewidth, label="cool")
+    ax[0].plot(bins[bins>r_mask], (gas_rate_cool[bins>r_mask]+gas_rate_mixed[bins>r_mask]+gas_rate_hot[bins>r_mask]) * 1e-3, c=tot_color, linewidth=linewidth, label="tot")
+    ax[0].set_title(rf"${round(time, 1)}$ Myr", fontsize=15)
+    ax[0].set_ylabel(r"$\dot{M}$ $[M_\odot\,yr^{-1}]$", fontsize=15)
+    ax[0].legend()
+    ax[0].tick_params(axis='both', which="both", top=True, right=True)
+    ax[0].set_xlim(np.amin(bins[bins>r_mask]), np.amax(bins[bins>r_mask]))
 
     # M_sun * kpc / kyr^-2 to M_sun * km / s / yr
     momentum_conversion = (3.086e+16 / 3.154e+10) * 1e-3
-    plt.plot(bins[bins>r_mask], momentum_rate_hot[bins>r_mask] * momentum_conversion, c=hot_color, linewidth=linewidth, label="hot")
-    plt.plot(bins[bins>r_mask], momentum_rate_mixed[bins>r_mask] * momentum_conversion, c=mixed_color, linewidth=linewidth, label="mixed")
-    plt.plot(bins[bins>r_mask], momentum_rate_cool[bins>r_mask] * momentum_conversion, c=cool_color, linewidth=linewidth, label="cool")
-    plt.plot(bins[bins>r_mask], (momentum_rate_cool[bins>r_mask]+momentum_rate_mixed[bins>r_mask]+momentum_rate_hot[bins>r_mask]) * momentum_conversion, c=tot_color, linewidth=linewidth, label="tot")
-    plt.title(rf"$t={round(time, 1)}$ Myr")
-    plt.xlabel("r [kpc]")
-    plt.ylabel(r"$\dot{p}$ $[M_\odot\,km\,s^{-1}\,yr^{-1}]$")
-    plt.legend()
-    plt.savefig(os.path.join(basedir, "png", f"{fnum}_momentum_outflow{tail}.png"), dpi=300)
-    plt.close()
+    ax[1].plot(bins[bins>r_mask], momentum_rate_hot[bins>r_mask] * momentum_conversion, c=hot_color, linewidth=linewidth, label="hot")
+    ax[1].plot(bins[bins>r_mask], momentum_rate_mixed[bins>r_mask] * momentum_conversion, c=mixed_color, linewidth=linewidth, label="mixed")
+    ax[1].plot(bins[bins>r_mask], momentum_rate_cool[bins>r_mask] * momentum_conversion, c=cool_color, linewidth=linewidth, label="cool")
+    ax[1].plot(bins[bins>r_mask], (momentum_rate_cool[bins>r_mask]+momentum_rate_mixed[bins>r_mask]+momentum_rate_hot[bins>r_mask]) * momentum_conversion, c=tot_color, linewidth=linewidth, label="tot")
+    ax[1].set_ylabel(r"$\dot{p}$ $[M_\odot\,km\,s^{-1}\,yr^{-1}]$", fontsize=15)
+    ax[1].tick_params(axis='both', which="both", top=True, right=True)
+    ax[1].set_xlim(np.amin(bins[bins>r_mask]), np.amax(bins[bins>r_mask]))
 
     # M_sun * kpc^2 / kyr^3 to erg / s
     energy_conversion = 3.154e-10 * (1.99e33 * (3.09e21)**2 * (3.154e10)**-2)
-    plt.semilogy(bins[bins>r_mask], energy_rate_hot[bins>r_mask] * energy_conversion, c=hot_color, linewidth=linewidth, label="hot")
-    plt.semilogy(bins[bins>r_mask], energy_rate_mixed[bins>r_mask] * energy_conversion, c=mixed_color, linewidth=linewidth, label="mixed")
-    plt.semilogy(bins[bins>r_mask], energy_rate_cool[bins>r_mask] * energy_conversion, c=cool_color, linewidth=linewidth, label="cool")
-    plt.semilogy(bins[bins>r_mask], (energy_rate_cool[bins>r_mask]+energy_rate_mixed[bins>r_mask]+energy_rate_hot[bins>r_mask]) * energy_conversion, c=tot_color, linewidth=linewidth, label="tot")
-    plt.title(rf"$t={round(time, 1)}$ Myr")
-    plt.xlabel("r [kpc]")
-    plt.ylabel(r"$\dot{E}$ $[erg\,s^{-1}]$")
-    plt.legend()
-    plt.savefig(os.path.join(basedir, "png", f"{fnum}_energy_outflow{tail}.png"), dpi=300)
+    ax[2].semilogy(bins[bins>r_mask], energy_rate_hot[bins>r_mask] * energy_conversion, c=hot_color, linewidth=linewidth, label="hot")
+    ax[2].semilogy(bins[bins>r_mask], energy_rate_mixed[bins>r_mask] * energy_conversion, c=mixed_color, linewidth=linewidth, label="mixed")
+    ax[2].semilogy(bins[bins>r_mask], energy_rate_cool[bins>r_mask] * energy_conversion, c=cool_color, linewidth=linewidth, label="cool")
+    ax[2].semilogy(bins[bins>r_mask], (energy_rate_cool[bins>r_mask]+energy_rate_mixed[bins>r_mask]+energy_rate_hot[bins>r_mask]) * energy_conversion, c=tot_color, linewidth=linewidth, label="tot")
+    ax[2].set_ylabel(r"$\dot{E}$ $[erg\,s^{-1}]$", fontsize=15)
+    ax[2].set_xlabel("r [kpc]", fontsize=15)
+    ax[2].tick_params(axis='both', which="both", top=True, right=True)
+    ax[2].set_xlim(np.amin(bins[bins>r_mask]), np.amax(bins[bins>r_mask]))
+ 
+    plt.tight_layout()
+    plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_outflow{tail}.png"), dpi=300)
     plt.close()
+
+    fig, ax = plt.subplots(1, 3, figsize=(15, 5), sharey=True)
 
     color_hot, color_mixed, color_cool = sns.color_palette(palette="flare", n_colors=3)
-    # styles = ["solid", "dotted", "dashed", "dashdot"]
-    styles = ["dashdot", "dotted", "dashed", "solid"]
-    # plt.plot(0, 0, linestyle=styles[0], label=r"$a=1~\mu$m", c="k", linewidth=linewidth)
-    plt.plot(0, 0, linestyle=styles[1], label=r"$a=0.1~\mu$m", c="k", linewidth=linewidth)
-    plt.plot(0, 0, linestyle=styles[2], label=r"$a=0.01~\mu$m", c="k", linewidth=linewidth)
-    plt.plot(0, 0, linestyle=styles[3], label=r"$a=0.001~\mu$m", c="k", linewidth=linewidth)
-    # plt.plot(0, 0, label=r"hot", c=color_hot, linewidth=linewidth)
-    # plt.plot(0, 0, label=r"mixed", c=color_mixed, linewidth=linewidth)
-    # plt.plot(0, 0, label=r"cool", c=color_cool, linewidth=linewidth)
+    styles = ["solid", "dotted", "dashed", "dashdot"]
+    ymin = -0.001
+    ymax = 0.016
 
-    # plt.plot(bins[bins>r_mask], dust_0_rate_hot[bins>r_mask], c=color_hot, linewidth=linewidth, linestyle=styles[0])
-    # plt.plot(bins[bins>r_mask], dust_0_rate_mixed[bins>r_mask], c=color_mixed, linewidth=linewidth, linestyle=styles[0])
-    # plt.plot(bins[bins>r_mask], dust_0_rate_cool[bins>r_mask], c=color_cool, linewidth=linewidth, linestyle=styles[0])
-    # plt.plot(bins[bins>r_mask], dust_0_rate_cool[bins>r_mask]+dust_0_rate_mixed[bins>r_mask]+dust_0_rate_hot[bins>r_mask], c=tot_color, linewidth=linewidth, label="total dust_0", linestyle=styles[0])
+    ax[2].plot(0, 0, linestyle=styles[0], label=r"$a=1~\mu$m", c="k", linewidth=linewidth)
+    ax[2].plot(0, 0, linestyle=styles[1], label=r"$a=0.1~\mu$m", c="k", linewidth=linewidth)
+    ax[2].plot(0, 0, linestyle=styles[2], label=r"$a=0.01~\mu$m", c="k", linewidth=linewidth)
+    ax[2].plot(0, 0, linestyle=styles[3], label=r"$a=0.001~\mu$m", c="k", linewidth=linewidth)
 
     # *1e-3 converts rate from per kyr to per year
-    plt.plot(bins[bins>r_mask], dust_1_rate_hot[bins>r_mask] * 1e-3, c=color_hot, linewidth=linewidth, linestyle=styles[1])
-    plt.plot(bins[bins>r_mask], dust_2_rate_hot[bins>r_mask] * 1e-3, c=color_hot, linewidth=linewidth, linestyle=styles[2])
-    plt.plot(bins[bins>r_mask], dust_3_rate_hot[bins>r_mask] * 1e-3, c=color_hot, linewidth=linewidth, linestyle=styles[3])
-    plt.xlim(np.amin(bins[bins>r_mask]), np.amax(bins[bins>r_mask]))
-    # plt.title(rf"$t={round(time, 1)}$ Myr")
-    plt.xlabel("r [kpc]", fontsize=15)
-    plt.ylabel(r"$\dot{M}$ $[M_\odot\,yr^{-1}]$", fontsize=15)
-    plt.xlim(np.amin(bins[bins>r_mask]), np.amax(bins[bins>r_mask]))
-    # plt.ylim(0-0.3, 7)
-    # plt.legend()
-    plt.tight_layout()
-    plt.savefig(os.path.join(basedir, "png", f"{fnum}_hot_outflow{tail}.png"), dpi=300)
-    plt.close()
+    ax[0].plot(bins[bins>r_mask], dust_0_rate_hot[bins>r_mask] * 1e-3, c=color_hot, linewidth=linewidth, linestyle=styles[0])
+    ax[0].plot(bins[bins>r_mask], dust_1_rate_hot[bins>r_mask] * 1e-3, c=color_hot, linewidth=linewidth, linestyle=styles[1])
+    ax[0].plot(bins[bins>r_mask], dust_2_rate_hot[bins>r_mask] * 1e-3, c=color_hot, linewidth=linewidth, linestyle=styles[2])
+    ax[0].plot(bins[bins>r_mask], dust_3_rate_hot[bins>r_mask] * 1e-3, c=color_hot, linewidth=linewidth, linestyle=styles[3])
+    ax[0].tick_params(axis='both', which="both", top=True, right=True)
+    ax[0].set_xlim(np.amin(bins[bins>r_mask]), np.amax(bins[bins>r_mask]))
+    ax[0].set_ylim(ymin, ymax)
+    ax[0].text(0.75, 0.0145, rf"${round(time, 1)}$ Myr", fontsize=15-3)
+    ax[0].set_xlabel("r [kpc]", fontsize=15)
+    ax[0].set_ylabel(r"$\dot{M}$ $[M_\odot\,yr^{-1}]$", fontsize=15)
 
     # *1e-3 converts rate from per kyr to per year
-    plt.plot(bins[bins>r_mask], dust_1_rate_mixed[bins>r_mask] * 1e-3, c=color_mixed, linewidth=linewidth, linestyle=styles[1])
-    plt.plot(bins[bins>r_mask], dust_2_rate_mixed[bins>r_mask] * 1e-3, c=color_mixed, linewidth=linewidth, linestyle=styles[2])
-    plt.plot(bins[bins>r_mask], dust_3_rate_mixed[bins>r_mask] * 1e-3, c=color_mixed, linewidth=linewidth, linestyle=styles[3])
-    plt.xlim(np.amin(bins[bins>r_mask]), np.amax(bins[bins>r_mask]))
-    # plt.title(rf"$t={round(time, 1)}$ Myr")
-    plt.xlabel("r [kpc]", fontsize=15)
-    plt.ylabel(r"$\dot{M}$ $[M_\odot\,yr^{-1}]$", fontsize=15)
-    plt.xlim(np.amin(bins[bins>r_mask]), np.amax(bins[bins>r_mask]))
-    # plt.ylim(0-0.3, 7)
-    # plt.legend()
-    plt.tight_layout()
-    plt.savefig(os.path.join(basedir, "png", f"{fnum}_mixed_outflow{tail}.png"), dpi=300)
-    plt.close()
+    ax[1].plot(bins[bins>r_mask], dust_0_rate_mixed[bins>r_mask] * 1e-3, c=color_mixed, linewidth=linewidth, linestyle=styles[0])
+    ax[1].plot(bins[bins>r_mask], dust_1_rate_mixed[bins>r_mask] * 1e-3, c=color_mixed, linewidth=linewidth, linestyle=styles[1])
+    ax[1].plot(bins[bins>r_mask], dust_2_rate_mixed[bins>r_mask] * 1e-3, c=color_mixed, linewidth=linewidth, linestyle=styles[2])
+    ax[1].plot(bins[bins>r_mask], dust_3_rate_mixed[bins>r_mask] * 1e-3, c=color_mixed, linewidth=linewidth, linestyle=styles[3])
+    ax[1].set_xlabel("r [kpc]", fontsize=15)
+    ax[1].tick_params(axis='both', which="both", top=True, right=True)
+    ax[1].set_xlim(np.amin(bins[bins>r_mask]), np.amax(bins[bins>r_mask]))
+    ax[1].set_ylim(ymin, ymax)
 
     # *1e-3 converts rate from per kyr to per year
-    plt.plot(bins[bins>r_mask], dust_1_rate_cool[bins>r_mask] * 1e-3, c=color_cool, linewidth=linewidth, linestyle=styles[1])
-    plt.plot(bins[bins>r_mask], dust_2_rate_cool[bins>r_mask] * 1e-3, c=color_cool, linewidth=linewidth, linestyle=styles[2])
-    plt.plot(bins[bins>r_mask], dust_3_rate_cool[bins>r_mask] * 1e-3, c=color_cool, linewidth=linewidth, linestyle=styles[3])
-    plt.plot(0, 0, linestyle=styles[1], label=r"$a=0.1~\mu$m", c="k", linewidth=linewidth)
-    plt.plot(0, 0, linestyle=styles[2], label=r"$a=0.01~\mu$m", c="k", linewidth=linewidth)
-    plt.plot(0, 0, linestyle=styles[3], label=r"$a=0.001~\mu$m", c="k", linewidth=linewidth)
-    plt.xlim(np.amin(bins[bins>r_mask]), np.amax(bins[bins>r_mask]))
-    # plt.ylim(0-0.3, 7)
-    # plt.title(rf"$t={round(time, 1)}$ Myr")
-    plt.xlabel("r [kpc]", fontsize=13)
-    plt.ylabel(r"$\dot{M}$ $[M_\odot\,yr^{-1}]$", fontsize=15)
-    plt.legend(fontsize=10)
+    ax[2].plot(bins[bins>r_mask], dust_0_rate_cool[bins>r_mask] * 1e-3, c=color_cool, linewidth=linewidth, linestyle=styles[0])
+    ax[2].plot(bins[bins>r_mask], dust_1_rate_cool[bins>r_mask] * 1e-3, c=color_cool, linewidth=linewidth, linestyle=styles[1])
+    ax[2].plot(bins[bins>r_mask], dust_2_rate_cool[bins>r_mask] * 1e-3, c=color_cool, linewidth=linewidth, linestyle=styles[2])
+    ax[2].plot(bins[bins>r_mask], dust_3_rate_cool[bins>r_mask] * 1e-3, c=color_cool, linewidth=linewidth, linestyle=styles[3])
+    ax[2].tick_params(axis='both', which="both", top=True, right=True)
+    ax[2].set_xlim(np.amin(bins[bins>r_mask]), np.amax(bins[bins>r_mask]))
+    ax[2].set_ylim(ymin, ymax)
+    ax[2].legend()
+    ax[2].set_xlabel("r [kpc]", fontsize=15)
+
     plt.tight_layout()
-    plt.savefig(os.path.join(basedir, "png", f"{fnum}_cool_outflow{tail}.png"), dpi=300)
+    plt.savefig(os.path.join(basedir, "png", f"{fnum}_dust_outflow{tail}.png"), dpi=300)
     plt.close()
 
 if __name__ == "__main__":

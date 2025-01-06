@@ -75,7 +75,7 @@ def main(basedir, field_names, exclude_disk, ymax, mode):
     ax[0].tick_params(axis='both', which="both", labelsize=15, top=True, right=True)
     ax[0].set_yscale('log')
     ax[0].set_ylabel(r"$m_{sput}~[M_\odot]$", fontsize=20)
-    ax[0].set_xlabel(r"$z~[kpc]$", fontsize=20)
+    ax[0].set_xlabel(r"$Time~[Myr]$", fontsize=20)
     ax[0].set_xlim(np.amin(times/1e3), np.amax(times/1e3))
     ax[0].set_ylim(ymin, ymax)
 
@@ -83,7 +83,7 @@ def main(basedir, field_names, exclude_disk, ymax, mode):
         ax[1].plot(times/1e3, sputtered_mixed[j], linestyle=styles[j], linewidth=linewidth, color=color_mixed)
     ax[1].tick_params(axis='both', which="both", labelsize=15, top=True, right=True)
     ax[1].set_yscale('log')
-    ax[1].set_xlabel(r"$z~[kpc]$", fontsize=20)
+    ax[1].set_xlabel(r"$Time~[Myr]$", fontsize=20)
     ax[1].set_xlim(np.amin(times/1e3), np.amax(times/1e3))
     ax[1].set_ylim(ymin, ymax)
 

@@ -150,7 +150,13 @@ def main(basedir, fnum, simulation, phase, weight, tail, r_mask, mode):
     pressure_color = "lightcoral"
     entropy_color = "blueviolet"
     mach_color = "plum"
-    linewidth = 1.75
+    linewidth = 2
+    color_hot, color_mixed, color_cool = sns.color_palette(palette="flare", n_colors=3)
+    styles = ["solid", "dashdot", "dotted", "dashed"]
+    if phase == "hot":
+        color = color_hot
+    if phase == "cold":
+        color = color_cool
 
     if mode == "dark":
         plt.style.use('dark_background')
@@ -162,17 +168,17 @@ def main(basedir, fnum, simulation, phase, weight, tail, r_mask, mode):
     m_dust_2 = np.array(m_dust_2)
     m_dust_3 = np.array(m_dust_3)
 
-    plt.semilogy(bin_tot[bin_tot>r_mask], m_gas[bin_tot>r_mask], c=density_color, linewidth=linewidth)
+    plt.semilogy(bin_tot[bin_tot>r_mask], m_gas[bin_tot>r_mask], c=color, linewidth=linewidth)
     plt.title(rf"total {phase} gas mass, $t={round(time, 1)}$ Myr")
     plt.xlabel("r [kpc]")
     plt.ylabel(r"$m_{gas}$ $[M_\odot]$")
     plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_{phase}_total{tail}.png"), dpi=300)
     plt.close()
 
-    plt.semilogy(bin_tot[bin_tot>r_mask], m_dust_0[bin_tot>r_mask], linewidth=linewidth, label=r"1 $\mu$m")
-    plt.semilogy(bin_tot[bin_tot>r_mask], m_dust_1[bin_tot>r_mask], linewidth=linewidth, label=r"0.1 $\mu$m")
-    plt.semilogy(bin_tot[bin_tot>r_mask], m_dust_2[bin_tot>r_mask], linewidth=linewidth, label=r"0.01 $\mu$m")
-    plt.semilogy(bin_tot[bin_tot>r_mask], m_dust_3[bin_tot>r_mask], linewidth=linewidth, label=r"0.001 $\mu$m")
+    plt.semilogy(bin_tot[bin_tot>r_mask], m_dust_0[bin_tot>r_mask], linewidth=linewidth, label=r"1 $\mu$m", linestyle=styles[0], color=color)
+    plt.semilogy(bin_tot[bin_tot>r_mask], m_dust_1[bin_tot>r_mask], linewidth=linewidth, label=r"0.1 $\mu$m", linestyle=styles[1], color=color)
+    plt.semilogy(bin_tot[bin_tot>r_mask], m_dust_2[bin_tot>r_mask], linewidth=linewidth, label=r"0.01 $\mu$m", linestyle=styles[2], color=color)
+    plt.semilogy(bin_tot[bin_tot>r_mask], m_dust_3[bin_tot>r_mask], linewidth=linewidth, label=r"0.001 $\mu$m", linestyle=styles[3], color=color)
     plt.legend()
     plt.title(rf"total dust mass, $t={round(time, 1)}$ Myr")
     # plt.ylim(1e-10, 1e3)
