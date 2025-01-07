@@ -25,7 +25,6 @@ def main(basedir, field_names, exclude_disk, ymax, mode):
         disk_i = 1
 
     color_hot, color_mixed, color_cool = sns.color_palette(palette="flare", n_colors=3)
-    colors = [color_hot, color_mixed, color_cool]
     styles = ["solid", "dashdot", "dotted", "dashed"]
 
     if mode == "dark":
