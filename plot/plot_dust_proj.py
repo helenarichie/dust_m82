@@ -15,10 +15,12 @@ def read_cmdline():
     p.add_argument("-s", "--nstart", type=int, required=True)
     p.add_argument("-e", "--nend", type=int, required=True)
     p.add_argument("-m", "--mode", type=str, choices=["dark", "light"], required=False, default="light")
+    p.add_argument("-l", "--cbar-lower", type=float, required=False, default=1)
+    p.add_argument("-u", "--cbar-upper", type=float, required=False, default=8)
     args = p.parse_args()
     return args
 
-def main(basedir, ns, ne, mode):
+def main(basedir, ns, ne, vmin, max, mode):
     # define data directories
     datadir = os.path.join(basedir, "hdf5", "proj")
     pngdir = os.path.join(basedir, "png", "dust_proj")
@@ -72,7 +74,7 @@ def main(basedir, ns, ne, mode):
             ax[i].tick_params(axis="both", which="both", direction="in", color="white", labeltop=False, 
                               labelbottom=False, labelleft=False, labelright=False, top=1, right=1, bottom=1,
                               left=1)
-            im = ax[i].imshow(np.log10(field.T), origin="lower", vmin=1, vmax=8, extent=[0, xlen, 0, ylen], cmap=cmap,
+            im = ax[i].imshow(np.log10(field.T), origin="lower", vmin=vmin, vmax=vmax, extent=[0, xlen, 0, ylen], cmap=cmap,
                               aspect="auto")
             
             ax[i].set_xticks(xticks)
@@ -90,7 +92,7 @@ def main(basedir, ns, ne, mode):
                 cbar.ax.tick_params(axis="y", direction="in", color="white")
                 ax[i].text(time_x, time_y, f"{t/1e3:.0f} Myr", ha="left", va="center", color="white")
 
-        fig.savefig(pngdir + f"/{fnum}_dust_proj.png", dpi=300, bbox_inches="tight")
+        fig.savefig(pngdir + f"/{fnum}_dust_proj_{mode}.png", dpi=300, bbox_inches="tight")
         plt.close()
        
         print(f"Saving figure {fnum} of {ne}.\n") 
@@ -101,6 +103,8 @@ if __name__ == "__main__":
     basedir = args.basedir
     ns = args.nstart
     ne = args.nend
+    vmin = args.cbar_lower
+    vmax = args.cbar_upper
 
     sys.path.insert(0, args.configdir)
     import hconfig
@@ -109,4 +113,4 @@ if __name__ == "__main__":
     if args.mode == "dark":
         mode = "dark"
 
-    main(basedir, ns, ne, mode)
+    main(basedir, ns, ne, vmin, vmax, mode)
