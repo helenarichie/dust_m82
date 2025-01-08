@@ -38,8 +38,14 @@ def main(basedir, field_names, ns, ne, vmin, vmax, slice, mode):
     matplotlib.rcParams.update({'font.size': 15})
     clabel = r'$\rho_{dust}/\rho_{gas}$'
 
-    xticks = [2, 4, 6, 8]
-    yticks = [2, 4, 6, 8, 10, 12, 14, 16, 18]
+    if slice == "xz":
+        xticks = [2, 4, 6, 8]
+        yticks = [2, 4, 6, 8, 10, 12, 14, 16, 18]
+        time_x, time_y = 8, 19
+    if slice == "xy":
+        xticks = yticks = [2, 4, 6, 8]
+        time_x, time_y = 8, 9.5
+
     sbar_x, sbar_y = 2, 1
     sbar_label = "2 kpc"
     linewidth = 2
@@ -47,7 +53,6 @@ def main(basedir, field_names, ns, ne, vmin, vmax, slice, mode):
     cbar_width = 0.3
     fig_width = len(field_names) * panel_width + cbar_width
     cbar_gridspec = (panel_width + cbar_width) / panel_width
-    time_x, time_y = 8, 19
 
     width_ratios = []
     for i in field_names:
