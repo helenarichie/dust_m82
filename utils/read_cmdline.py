@@ -1,0 +1,27 @@
+import argparse
+
+def read_cmdline():
+    p = argparse.ArgumentParser()
+    p.add_argument("-b", "--basedir", type=str, required=True)
+    p.add_argument("-c", "--configdir", type=str)
+    p.add_argument("-o", "--outdir", type=str)
+    p.add_argument("-f", "--fnum", type=int, required=False)
+    p.add_argument("-s", "--simulation", type=str, required=False)
+    p.add_argument("-w", "--weight", type=str, required=False, default="dweight")
+    p.add_argument("-r", "--rmask", type=int, required=False, default=0)
+    p.add_argument("-p", "--phase", type=str, required=False, default=None)
+    p.add_argument("-l", "--ymin", type=float, required=False, default=None)
+    p.add_argument("-u", "--ymax", type=float, required=False, default=None)
+    p.add_argument("-e", "--exclude-disk", default=False, required=False, action="store_true")
+    p.add_argument("-m", "--mode", type=str, choices=["dark", "light"], required=False, default="light")
+    p.add_argument("-ns", "--nstart", type=int)
+    p.add_argument("-ne", "--nend", type=int)
+    p.add_argument("--fig-name", type=str, required=False, default="")
+    p.add_argument("--field-names", nargs="+", default=[])
+    p.add_argument("--time", type=float)
+    p.add_argument("--tmax", type=float)
+    p.add_argument("--tail", type=str, default="")
+    p.add_argument("--log-name", type=str)
+    p.add_argument("--field-name", type=str)
+    args = p.parse_args()
+    return args
