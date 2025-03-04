@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 def read_radial_profile(basedir, fnum, simulation, phase, weight, tail=None):
     N_bins = 80
@@ -122,12 +123,12 @@ def read_radial_profile(basedir, fnum, simulation, phase, weight, tail=None):
                     parse_totals = False
                     parse_stats = True
     
-        m_dust = [m_dust_0, m_dust_1, m_dust_2, m_dust_3]
-        gas_density = [gas_avg, gas_med, gas_lo, gas_hi]
-        temperature = [temp_avg, temp_med, temp_lo, temp_hi]
-        velocity = [v_avg, v_med, v_lo, v_hi]
-        pressure = [P_avg, P_med, P_lo, P_hi]
-        entropy = [S_avg, S_med, S_lo, S_hi]
-        mach = [M_avg, M_med, M_lo, M_hi]
+        m_dust = np.array([m_dust_0, m_dust_1, m_dust_2, m_dust_3])
+        gas_density = np.array([gas_avg, gas_med, gas_lo, gas_hi])
+        temperature = np.array([temp_avg, temp_med, temp_lo, temp_hi])
+        velocity = np.array([v_avg, v_med, v_lo, v_hi])
+        pressure = np.array([P_avg, P_med, P_lo, P_hi])
+        entropy = np.array([S_avg, S_med, S_lo, S_hi])
+        mach = np.array([M_avg, M_med, M_lo, M_hi])
 
     return bin_tot, m_gas, m_dust, gas_density, cell_count, temperature, velocity, pressure, entropy, mach
