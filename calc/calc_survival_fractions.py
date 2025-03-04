@@ -2,23 +2,18 @@ import argparse
 import numpy as np
 import os
 from csv import writer
-
-def read_cmdline():
-    p = argparse.ArgumentParser()
-    p.add_argument("-b", "--basedir", type=str, required=True)
-    p.add_argument('-t', '--time', type=float, required=True)
-    p.add_argument('-f', '--field-names', nargs="+", default=[])
-    p.add_argument('-e', '--exclude-disk', type=bool, default=False)
-    args = p.parse_args()
-    return args
+import sys
+import pathlib
+sys.path.insert(0, os.path.join(pathlib.Path(__file__).parent.resolve(), "../utils/"))
+from read_cmdline import read_cmdline
+from read_vertical_profiles import read_vertical_profiles
+from read_vertical_outflow_rates import read_vertical_outflow_rates
 
 def main(basedir, time, field_names, exclude_disk):
 
     disk_i = 0
     if exclude_disk:
         disk_i = 1
-
-    csvdir = os.path.join(basedir, "csv/")
 
     sputtered_names = []
     for field in field_names:
@@ -31,75 +26,13 @@ def main(basedir, time, field_names, exclude_disk):
         if field == "dust_3":
             sputtered_names.append("sputtered_3")
 
-    sputtered_hot = []
-    sputtered_mixed = []
-    sputtered_cool = []
+    csvdir = os.path.join(basedir, "csv/short/")
 
-    for name in sputtered_names:
-        sputtered_i = []
-        with open(os.path.join(csvdir, f"{name}_hot_short.csv"), "r") as f:
-            for line in f:
-                line = line.rstrip("\n")
-                line = line.split(",")
-                sputtered_i.append(line)
-        f.close()
-        sputtered_hot.append(sputtered_i)
-    sputtered_hot = np.array(sputtered_hot, dtype=float)
+    times, sputtered_hot, sputtered_mixed, sputtered_cool = read_vertical_profiles(csvdir, sputtered_names)
 
-    for name in sputtered_names:
-        sputtered_i = []
-        with open(os.path.join(csvdir, f"{name}_mixed_short.csv"), "r") as f:
-            for line in f:
-                line = line.rstrip("\n")
-                line = line.split(",")
-                sputtered_i.append(line)
-        f.close()
-        sputtered_mixed.append(sputtered_i)
-    sputtered_mixed = np.array(sputtered_mixed, dtype=float)
+    csvdir = os.path.join(basedir, "csv/outflow_rates/")
 
-    for name in sputtered_names:
-        sputtered_i = []
-        with open(os.path.join(csvdir, f"{name}_cool_short.csv"), "r") as f:
-            for line in f:
-                line = line.rstrip("\n")
-                line = line.split(",")
-                sputtered_i.append(line)
-        f.close()
-        sputtered_cool.append(sputtered_i)
-    sputtered_cool = np.array(sputtered_cool, dtype=float)
-
-    rates_hot = []
-    for field in field_names:
-        rate_i = []
-        with open(os.path.join(csvdir, f"rate_{field}_hot_1e-24.csv")) as f:
-            for line in f:
-                line = line.split(",")
-                rate_i.append(np.array(line, dtype=float))
-        rates_hot.append(rate_i)
-
-    rates_mixed = []
-    for field in field_names:
-        rate_i = []
-        with open(os.path.join(csvdir, f"rate_{field}_mixed_1e-24.csv")) as f:
-            for line in f:
-                line = line.split(",")
-                rate_i.append(np.array(line, dtype=float))
-        rates_mixed.append(rate_i)
-
-    rates_cool = []
-    for field in field_names:
-        rate_i = []
-        with open(os.path.join(csvdir, f"rate_{field}_cool_1e-24.csv")) as f:
-            for line in f:
-                line = line.split(",")
-                rate_i.append(np.array(line, dtype=float))
-        rates_cool.append(rate_i)
-
-    time_output = []
-    with open(os.path.join(csvdir, "time_output_1e-24.csv")) as f:
-        for line in f:
-            time_output.append(float(line))
-    time_output = np.array(time_output)
+    time_output, rates_hot, rates_mixed, rates_cool = read_vertical_outflow_rates(csvdir, field_names)
 
     dt_out = time_output[2] - time_output[1]
 
@@ -136,7 +69,7 @@ def main(basedir, time, field_names, exclude_disk):
         mass_out_cool.append(mass_out_i)
     mass_out_cool = np.array(mass_out_cool)
 
-    sput_ind = np.where(sputtered_cool[0,:,0]==time)[0][0]
+    sput_ind = np.where(times == time)[0][0]
     outflow_ind = np.where(time_output==time)[0][0]
 
     hot_outflow, mixed_outflow, cool_outflow = [], [], []
