@@ -5,22 +5,13 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import os
+import pathlib
 import seaborn as sns
 import sys
+sys.path.insert(0, os.path.join(pathlib.Path(__file__).parent.resolve(), "../utils/"))
+from read_cmdline import read_cmdline
 
-def read_cmdline():
-    p = argparse.ArgumentParser()
-    p.add_argument("-b", "--basedir", type=str, required=True)
-    p.add_argument("-c", "--configdir", type=str, required=True)
-    p.add_argument("-s", "--nstart", type=int, required=True)
-    p.add_argument("-e", "--nend", type=int, required=True)
-    p.add_argument("-m", "--mode", type=str, choices=["dark", "light"], required=False, default="light")
-    p.add_argument("-l", "--cbar-lower", type=float, required=False, default=1)
-    p.add_argument("-u", "--cbar-upper", type=float, required=False, default=8)
-    args = p.parse_args()
-    return args
-
-def main(basedir, ns, ne, vmin, max, mode):
+def main(basedir, ns, ne, vmin=0, vmax=8, mode):
     # define data directories
     datadir = os.path.join(basedir, "hdf5", "proj")
     pngdir = os.path.join(basedir, "png", "dust_proj")
@@ -84,7 +75,7 @@ def main(basedir, ns, ne, vmin, max, mode):
                 ax[i].hlines(sbar_y, sbar_x, sbar_x + (xticks[1] - xticks[0]), linewidth=linewidth, colors="white")
                 ax[i].text(sbar_x - 0.2, sbar_y, sbar_label, ha="right", va="center", color="white")
             
-            if i == 3:
+            if (i == 3) or (len(fields) == 1):
                 divider = make_axes_locatable(ax[i])
                 cax = divider.append_axes("right", size="5%", pad=0.05)
                 cbar = fig.colorbar(im, ax=ax[i], cax=cax)
@@ -103,14 +94,11 @@ if __name__ == "__main__":
     basedir = args.basedir
     ns = args.nstart
     ne = args.nend
-    vmin = args.cbar_lower
-    vmax = args.cbar_upper
+    vmin = args.ymin
+    vmax = args.ymax
+    mode = args.mode
 
     sys.path.insert(0, args.configdir)
     import hconfig
-
-    mode = "light"
-    if args.mode == "dark":
-        mode = "dark"
 
     main(basedir, ns, ne, vmin, vmax, mode)
