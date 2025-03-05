@@ -34,7 +34,8 @@ def main(basedir, field_names, ns, ne, vmin, vmax, slice, mode):
     if mode == "dark":
         plt.style.use('dark_background')
 
-    cmap = sns.cubehelix_palette(start=.2, rot=-.3, as_cmap=True, reverse=True)
+    # cmap = sns.cubehelix_palette(start=.2, rot=-.3, as_cmap=True, reverse=True)
+    cmap = sns.color_palette("cubehelix", as_cmap=True)
     matplotlib.rcParams.update({'font.size': 15})
     clabel = r'$\rho_{dust}/\rho_{gas}$'
 

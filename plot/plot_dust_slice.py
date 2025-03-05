@@ -32,7 +32,7 @@ def main(basedir, field_names, ns, ne, vmin, vmax, slice, mode):
     if mode == "dark":
         plt.style.use('dark_background')
 
-    cmap = sns.color_palette("mako", as_cmap=True)
+    cmap = sns.color_palette("rocket", as_cmap=True)
     matplotlib.rcParams.update({'font.size': 15})
     clabel = r'$\log_{10}(\rho_{dust}~[M_\odot\,kpc^{-3}])$'
 
@@ -42,6 +42,7 @@ def main(basedir, field_names, ns, ne, vmin, vmax, slice, mode):
     if slice == "xy":
         xticks = yticks = [2, 4, 6, 8]
     sbar_x, sbar_y = 2, 1
+    text_x = sbar_x - 0.2
     sbar_label = "2 kpc"
     linewidth = 2
     panel_width = 5
@@ -49,9 +50,9 @@ def main(basedir, field_names, ns, ne, vmin, vmax, slice, mode):
     fig_width = len(field_names) * panel_width + cbar_width
     cbar_gridspec = (panel_width + cbar_width) / panel_width
     if slice == "xz":
-        time_x, time_y = 8, 19
+        time_x, time_y = 9.5, 19
     if slice == "xy":
-        time_x, time_y = 8, 9.5
+        time_x, time_y = 8.25, 9.25
 
     width_ratios = []
     for i in field_names:
@@ -95,6 +96,8 @@ def main(basedir, field_names, ns, ne, vmin, vmax, slice, mode):
         for i, field_i in enumerate(field_names):
             field = np.array(f["d_" + field_i + f"_{slice}"])
 
+            field[field==0] = sys.float_info.min
+
             ax[i].tick_params(axis="both", which="both", direction="in", color="white", labeltop=False, 
                               labelbottom=False, labelleft=False, labelright=False, top=1, right=1, bottom=1,
                               left=1)
@@ -106,15 +109,26 @@ def main(basedir, field_names, ns, ne, vmin, vmax, slice, mode):
             
             if i == 0:
                 ax[i].hlines(sbar_y, sbar_x, sbar_x + (xticks[1] - xticks[0]), linewidth=linewidth, colors="white")
-                ax[i].text(sbar_x - 0.2, sbar_y, sbar_label, ha="right", va="center", color="white")
+                ax[i].text(text_x, sbar_y, sbar_label, ha="right", va="center", color="white")
             
             if (i == len(field_names)-1):
                 divider = make_axes_locatable(ax[i])
                 cax = divider.append_axes("right", size="5%", pad=0.05)
                 cbar = fig.colorbar(im, ax=ax[i], cax=cax)
-                cbar.set_label(clabel)
+                cbar.set_label(clabel, rotation=270, labelpad=25, fontsize=18)
                 cbar.ax.tick_params(axis="y", direction="in", color="white")
-                ax[i].text(time_x, time_y, f"{t/1e3:.0f} Myr", ha="left", va="center", color="white")
+                ax[i].text(time_x, time_y, f"{t/1e3:.0f} Myr", ha="right", va="center", color="white")
+
+            if field_i == "dust_0":
+                size_label = r"$1~{\mu m}$"
+            if field_i == "dust_1":
+                size_label = r"$0.1~{\mu m}$"
+            if field_i == "dust_2":
+                size_label = r"$0.01~{\mu m}$"
+            if field_i == "dust_3":
+                size_label = r"$0.001~{\mu m}$"
+            
+            ax[i].text(0.5, time_y, size_label, ha="left", va="center", color="white")
 
         fig.savefig(pngdir + f"/{fnum}_dust_slice_{slice}_{mode}.png", dpi=300, bbox_inches="tight")
         plt.close()
