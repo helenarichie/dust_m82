@@ -7,7 +7,7 @@ import numpy as np
 import os
 import seaborn as sns
 import sys
-sys.path.append("../calc/")
+sys.path.append("../../calc/")
 from calc_temp import calc_temp_DE
 
 def read_cmdline():
