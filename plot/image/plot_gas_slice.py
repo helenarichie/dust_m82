@@ -33,7 +33,7 @@ def main(basedir, ns, ne, slice, mode, plot_lines, angle):
     if mode == "dark":
         plt.style.use('dark_background')
 
-    cmap_gas = sns.color_palette("mako", as_cmap=True)
+    cmap_gas = sns.color_palette("crest_r", as_cmap=True)
     cmap_temp = sns.color_palette("flare_r", as_cmap=True)
     matplotlib.rcParams.update({'font.size': 15})
     clabel_dens = r'$\log_{10}(\rho_{gas}~[M_\odot\,kpc^{-3}])$'
@@ -112,25 +112,17 @@ def main(basedir, ns, ne, slice, mode, plot_lines, angle):
         im_temp = ax[1].imshow(np.log10(temperature.T), origin="lower", vmin=vlim_temp[0], vmax=vlim_temp[1], extent=[0, xlen, 0, ylen], cmap=cmap_temp, aspect="auto", zorder=-1)
 
         if plot_lines:
-            y_lines = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-            for y in y_lines:
-                ax[0].hlines(y, 0, 10, linewidth=linewidth-1, colors="white", alpha=0.7, zorder=0, linestyle="--")
+            # y_lines = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+            # for y in y_lines:
+            #     ax[0].hlines(y, 0, 10, linewidth=linewidth-1, colors="white", alpha=0.7, zorder=0, linestyle="--")
 
             phi_right = np.radians(90 - angle)
             phi_left = np.radians(90 + angle)
             ax[0].axline((5, 10), slope=np.tan(phi_right), color="white", alpha=0.7, linewidth=linewidth-1, zorder=0)
             ax[0].axline((5, 10), slope=np.tan(phi_left), color="white", alpha=0.7, linewidth=linewidth-1, zorder=0)
             
-            ax[1].hlines(sbar_y, sbar_x, sbar_x + (xticks[1] - xticks[0]), linewidth=linewidth, colors="white")
-            ax[1].text(text_x, sbar_y, sbar_label, ha="right", va="center", color="white")
-        else:
-            # phi_right = np.radians(90 - angle)
-            # phi_left = np.radians(90 + angle)
-            # ax[0].axline((5, 10), slope=np.tan(phi_right), color="white", alpha=0.7, linewidth=linewidth-1, zorder=0)
-            # ax[0].axline((5, 10), slope=np.tan(phi_left), color="white", alpha=0.7, linewidth=linewidth-1, zorder=0)
-            
-            ax[0].hlines(sbar_y, sbar_x, sbar_x + (xticks[1] - xticks[0]), linewidth=linewidth, colors="white")
-            ax[0].text(text_x, sbar_y, sbar_label, ha="right", va="center", color="white")
+        ax[0].hlines(sbar_y, sbar_x, sbar_x + (xticks[1] - xticks[0]), linewidth=linewidth, colors="white")
+        ax[0].text(text_x, sbar_y, sbar_label, ha="right", va="center", color="white")
 
         divider = make_axes_locatable(ax[0])
         cax = divider.append_axes("right", size="5%", pad=0.05)
