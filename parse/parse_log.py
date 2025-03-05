@@ -1,168 +1,79 @@
+import argparse
+import numpy as np
+import os
 import sys
-# sys.path.insert(0, "/ix/eschneider/helena/code/my_scripts/")
-sys.path.insert(0, "/Users/helenarichie/GitHub/my_scripts/")
-from hconfig import *
+sys.path.insert(0, os.path.join(pathlib.Path(__file__).parent.resolve(), "../utils/"))
+from read_cmdline import read_cmdline
 from csv import writer
 
-date = "2024-10-25"
 
-###############################
-crc = False
-frontier = False
-my_pc = True
-###############################
+def main(basedir, outdir, log_name, field):
 
-########## data type ############
-debugging = False
-cloud_wind = False
-testing = False
-m82 = False
-#################################
+    if field == "Sputtered":
+        field_names = ["sputtered_0", "sputtered_1", "sputtered_2", "sputtered_3"]
+    if field == "Dust":
+        field_names = ["dust_0", "dust_1", "dust_2", "dust_3"]
+    if field == "Gas":
+        field_names = ["gas"]
 
-if crc:
-  if debugging:
-      basedir = f"/ix/eschneider/helena/data/debugging/{date}/"
-  if cloud_wind:
-      basedir = f"/ix/eschneider/helena/data/cloud_wind/{date}/"
-  if testing:
-      basedir = f"/ix/eschneider/helena/data/testing/{date}/"
-  if m82:
-      basedir = f"/ix/eschneider/helena/data/m82/{date}/"
-if frontier:
-  basedir = f"/lustre/orion/ast181/scratch/helenarichie/{date}/"
-if my_pc:
-  basedir = f"/Users/helenarichie/Desktop/{date}/log/"
+    for name in field_names:
+        f = open(os.path.join(outdir, f"{name}.csv"), "w")
+        f.close()
+    f = open(os.path.join(outdir, f"{field.lower()}_time.csv"), "w")
+    f.close()
 
-csvdir = os.path.join(basedir, "csv/")
+    time = 0
 
-f = open(os.path.join(csvdir, "sputtered_0.csv"), "w")
-f.close()
-f = open(os.path.join(csvdir, "sputtered_1.csv"), "w")
-f.close()
-f = open(os.path.join(csvdir, "sputtered_2.csv"), "w")
-f.close()
-f = open(os.path.join(csvdir, "sputtered_3.csv"), "w")
-f.close()
-f = open(os.path.join(csvdir, "dust_0.csv"), "w")
-f.close()
-f = open(os.path.join(csvdir, "dust_1.csv"), "w")
-f.close()
-f = open(os.path.join(csvdir, "dust_2.csv"), "w")
-f.close()
-f = open(os.path.join(csvdir, "dust_3.csv"), "w")
-f.close()
-f = open(os.path.join(csvdir, "gas.csv"), "w")
-f.close()
+    N_bins = 10
 
-times = []
-times_counter = 0
+    rows = np.zeros((len(field_names), N_bins, 3))
 
-row_sputtered_0 = np.zeros((10, 4))
-row_sputtered_1 = np.zeros((10, 4))
-row_sputtered_2 = np.zeros((10, 4))
-row_sputtered_3 = np.zeros((10, 4))
-row_dust_0 = np.zeros((10, 4))
-row_dust_1 = np.zeros((10, 4))
-row_dust_2 = np.zeros((10, 4))
-row_dust_3 = np.zeros((10, 4))
-row_gas = np.zeros((10, 4))
+    with open(os.path.join(basedir, f"{log_name}.log")) as f:
+        for line in f:
+            line_split = list(line)
+            if line.startswith("n_step"):
+                line_temp = line.split(" ")
+                while("" in line_temp):
+                    line_temp.remove("")
+                time = float(line_temp[4])
+                with open(os.path.join(outdir, f"{field.lower()}_time.csv"), "a") as f_txt:
+                    writer_obj = writer(f_txt)
+                    writer_obj.writerow([time])
+                    f_txt.close()
+                for n, name in enumerate(field_names):
+                    with open(os.path.join(outdir, f"{name}.csv"), "a") as f_txt:
+                        writer_obj = writer(f_txt)
+                        writer_obj.writerow(rows[n])
+                        f_txt.close()
+                if field != "Sputtered":
+                    rows = np.zeros((len(field_names), N_bins, 3))
+            elif line_split[0].isdigit() and line_split[1] == " ":
+                if line_split[3] == field[0]:
+                    line = line.replace(f"{field} mass:  (hot) ", "")
+                    line = line.replace("(mixed) ", "")
+                    line = line.replace("(cool) ", "")
+                    line.rstrip("\n")
+                    line = line.split("  ")
+                    while("" in line):
+                        line.remove("")
+                    # for each vertical bin
+                    for i in range(0, N_bins):
+                        # if i is the bin index
+                        if line[0] == str(i):
+                            for n, name in enumerate(field_names):
+                                if field == "Sputtered":
+                                    rows[n][i] += np.array([float(line[n+1]), float(line[n+5]), float(line[n+9])])
+                                if field == "Dust":
+                                    rows[n][i] = np.array([float(line[n+1]), float(line[n+5]), float(line[n+9])])
+                                if field == "Gas":
+                                    rows[n][i] = np.array([float(line[n+1]), float(line[n+2]), float(line[n+3])])
 
-with open(os.path.join(basedir, "high_z_fixed.log")) as f:
-    for line in f:
-        line_split = list(line)
-        if line_split[0].isdigit():
-            if line_split[3] == "S":
-                line = line.replace("Sputtered mass:  (hot) ", "")
-                line = line.replace("(mixed) ", "")
-                line = line.replace("(cool) ", "")
-                line.rstrip("\n")
-                line = line.split("  ")
-                while("" in line):
-                    line.remove("")
-                # for each vertical bin
-                for i in range(0, 11):
-                    # if i is the bin index
-                    if line[0] == str(i):
-                        row_sputtered_0[i] = [times_counter, float(line[1]), float(line[5]), float(line[9])]
-                        row_sputtered_1[i] = [times_counter, float(line[2]), float(line[6]), float(line[10])]
-                        row_sputtered_2[i] = [times_counter, float(line[3]), float(line[7]), float(line[11])]
-                        row_sputtered_3[i] = [times_counter, float(line[4]), float(line[8]), float(line[12])]
-            elif line_split[3] == "D":
-                line = line.replace("Dust mass:  (hot) ", "")
-                line = line.replace("(mixed) ", "")
-                line = line.replace("(cool) ", "")
-                line.rstrip("\n")
-                line = line.split("  ")
-                while("" in line):
-                    line.remove("")
-                # for each vertical bin
-                for i in range(0, 11):
-                    # if i is the bin index
-                    if line[0] == str(i):
-                        row_dust_0[i] = [times_counter, float(line[1]), float(line[5]), float(line[9])]
-                        row_dust_1[i] = [times_counter, float(line[2]), float(line[6]), float(line[10])]
-                        row_dust_2[i] = [times_counter, float(line[3]), float(line[7]), float(line[11])]
-                        row_dust_3[i] = [times_counter, float(line[4]), float(line[8]), float(line[12])]
-            elif line_split[3] == "G":
-                line = line.replace("Gas mass:  (hot) ", "")
-                line = line.replace("(mixed) ", "")
-                line = line.replace("(cool) ", "")
-                line.rstrip("\n")
-                line = line.split("  ")
-                while("" in line):
-                    line.remove("")
-                # for each vertical bin
-                for i in range(0, 11):
-                    # if i is the bin index
-                    if line[0] == str(i):
-                        row_gas[i] = [times_counter, float(line[1]), float(line[2]), float(line[3])]
-        elif line.startswith("n_step"):         
-            with open(os.path.join(csvdir, "sputtered_0.csv"), "a") as f_txt:
-                writer_obj = writer(f_txt)
-                writer_obj.writerow(row_sputtered_0)
-                f_txt.close()
-            with open(os.path.join(csvdir, "sputtered_1.csv"), "a") as f_txt:
-                writer_obj = writer(f_txt)
-                writer_obj.writerow(row_sputtered_1)
-                f_txt.close()
-            with open(os.path.join(csvdir, "sputtered_2.csv"), "a") as f_txt:
-                writer_obj = writer(f_txt)
-                writer_obj.writerow(row_sputtered_2)
-                f_txt.close()
-            with open(os.path.join(csvdir, "sputtered_3.csv"), "a") as f_txt:
-                writer_obj = writer(f_txt)
-                writer_obj.writerow(row_sputtered_3)
-                f_txt.close()
-            with open(os.path.join(csvdir, "dust_0.csv"), "a") as f_txt:
-                writer_obj = writer(f_txt)
-                writer_obj.writerow(row_dust_0)
-                f_txt.close()
-            with open(os.path.join(csvdir, "dust_1.csv"), "a") as f_txt:
-                writer_obj = writer(f_txt)
-                writer_obj.writerow(row_dust_1)
-                f_txt.close()
-            with open(os.path.join(csvdir, "dust_2.csv"), "a") as f_txt:
-                writer_obj = writer(f_txt)
-                writer_obj.writerow(row_dust_2)
-                f_txt.close()
-            with open(os.path.join(csvdir, "dust_3.csv"), "a") as f_txt:
-                writer_obj = writer(f_txt)
-                writer_obj.writerow(row_dust_3)
-                f_txt.close()
-            with open(os.path.join(csvdir, "gas.csv"), "a") as f_txt:
-                writer_obj = writer(f_txt)
-                writer_obj.writerow(row_gas)
-                f_txt.close()
-            row_sputtered_0 = np.zeros((10, 4))
-            row_sputtered_1 = np.zeros((10, 4))
-            row_sputtered_2 = np.zeros((10, 4))
-            row_sputtered_3 = np.zeros((11, 4))
-            row_dust_0 = np.zeros((10, 4))
-            row_dust_1 = np.zeros((10, 4))
-            row_dust_2 = np.zeros((10, 4))
-            row_dust_3 = np.zeros((10, 4))
-            row_gas = np.zeros((10, 4))
-            line = line.split(" ")
-            while("" in line):
-                line.remove("")
-            times_counter = float(line[4])
+if __name__ == "__main__":
+    args = read_cmdline()
+
+    basedir = args.basedir
+    outdir = args.outdir
+    log_name = args.log_name
+    field_name = args.field_name
+
+    main(basedir, outdir, log_name, field_name)

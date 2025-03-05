@@ -23,6 +23,13 @@ def main(basedir, field_names):
         f.close()
         f = open(os.path.join(csvdir, f"{field}_cool_short.csv"), "w")
         f.close()
+    f = open(os.path.join(csvdir, f"time_short.csv"), "w")
+    f.close()
+
+    times = [0]
+    with open(os.path.join(csvdir, f"{field_names[0].split('_')[0]}_time.csv"), "r") as f:
+        for line in f:
+            times.append(float(line))
 
     for s, field in enumerate(field_names):
         print(field)
@@ -30,7 +37,7 @@ def main(basedir, field_names):
         tmax_i = 0
         masses = np.zeros((4, 10, 3))
         with open(os.path.join(csvdir, f"{field}.csv")) as f:
-            for line in f:
+            for l, line in enumerate(f):
                 line = line.split(",")
                 for i, bin in enumerate(line):
                     bin = bin.replace("[", "")
@@ -39,11 +46,16 @@ def main(basedir, field_names):
                     while("" in bin):
                         bin.remove("")
                     if i < 10:
-                        masses[s][i] = np.array(bin[1:4], dtype=float)  # 1:4 = hot, mixed, cold (excludes 0, which is time)
-                        time = float(bin[0])
+                        masses[s][i] = np.array(bin[0:3], dtype=float)  # 0:3 = hot, mixed, cold
+                        time = times[l]
                 if time == tmaxs[tmax_i]:
+                    if s == 0 and time != 0:
+                        with open(os.path.join(csvdir, f"time_short.csv"), "a") as f_write:
+                            writer_obj = writer(f_write)
+                            writer_obj.writerow([time])
+                            f_write.close()
                     for j in range(0, 2+1):
-                        row = [tmaxs[tmax_i]]
+                        row = []
                         for mass in masses[s][:,j]:
                             row.append(mass)
                         with open(os.path.join(csvdir, f"{field}_{labels[j]}_short.csv"), "a") as f_write:

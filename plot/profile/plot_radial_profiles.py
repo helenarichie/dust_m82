@@ -1,26 +1,16 @@
 import argparse
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import seaborn as sns
 import sys
+import pathlib
+sys.path.insert(0, os.path.join(pathlib.Path(__file__).parent.resolve(), "../utils/"))
+from read_cmdline import read_cmdline
 
 
-def read_cmdline():
-    p = argparse.ArgumentParser()
-    p.add_argument("-b", "--basedir", type=str, required=True)
-    p.add_argument("-c", "--configdir", type=str, required=True)
-    p.add_argument("-f", "--fnum", type=int, required=True)
-    p.add_argument("-s", "--simulation", type=str, required=True)
-    p.add_argument("-p", "--phase", type=str, required=True)
-    p.add_argument("-w", "--weight", type=str, required=True)
-    p.add_argument("-t", "--tail", type=str, required=False, default="")
-    p.add_argument("-r", "--rmask", type=int, required=False, default=0)
-    p.add_argument("-m", "--mode", type=str, choices=["dark", "light"], required=False, default="light")
-    args = p.parse_args()
-    return args
-
-def main(basedir, fnum, simulation, phase, weight, tail, r_mask, mode):
+def main(basedir, outdir, fnum, simulation, phase, weight, tail, r_mask, mode, field_names):
     N_bins = 80
     time = fnum * 50 / 1e3
 
@@ -141,7 +131,7 @@ def main(basedir, fnum, simulation, phase, weight, tail, r_mask, mode):
                     parse_totals = True
                 if line.startswith("# Statistics:"):
                     parse_totals = False
-                    parse_stats = True 
+                    parse_stats = True
 
     density_color = "mediumturquoise"
     velocity_color = "teal"
@@ -152,11 +142,13 @@ def main(basedir, fnum, simulation, phase, weight, tail, r_mask, mode):
     mach_color = "plum"
     linewidth = 2
     color_hot, color_mixed, color_cool = sns.color_palette(palette="flare", n_colors=3)
-    styles = ["solid", "dashdot", "dotted", "dashed"]
+    styles = ["solid", "dashed", "dashdot", "dotted"]
     if phase == "hot":
         color = color_hot
     if phase == "cold":
         color = color_cool
+
+    matplotlib.rcParams.update({'font.size': 15})
 
     if mode == "dark":
         plt.style.use('dark_background')
@@ -167,24 +159,38 @@ def main(basedir, fnum, simulation, phase, weight, tail, r_mask, mode):
     m_dust_1 = np.array(m_dust_1)
     m_dust_2 = np.array(m_dust_2)
     m_dust_3 = np.array(m_dust_3)
+    m_dust = np.array([m_dust_0, m_dust_1, m_dust_2, m_dust_3])
 
     plt.semilogy(bin_tot[bin_tot>r_mask], m_gas[bin_tot>r_mask], c=color, linewidth=linewidth)
-    plt.title(rf"total {phase} gas mass, $t={round(time, 1)}$ Myr")
+    # plt.title(rf"total {phase} gas mass, $t={round(time, 1)}$ Myr")
     plt.xlabel("r [kpc]")
     plt.ylabel(r"$m_{gas}$ $[M_\odot]$")
-    plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_{phase}_total{tail}.png"), dpi=300)
+    # plt.ylim(1)
+    plt.xlim(0, 10)
+    plt.tight_layout()
+    plt.savefig(os.path.join(outdir, f"{simulation}_{fnum}_gas_{phase}_total{tail}.png"), dpi=300)
     plt.close()
 
-    plt.semilogy(bin_tot[bin_tot>r_mask], m_dust_0[bin_tot>r_mask], linewidth=linewidth, label=r"1 $\mu$m", linestyle=styles[0], color=color)
-    plt.semilogy(bin_tot[bin_tot>r_mask], m_dust_1[bin_tot>r_mask], linewidth=linewidth, label=r"0.1 $\mu$m", linestyle=styles[1], color=color)
-    plt.semilogy(bin_tot[bin_tot>r_mask], m_dust_2[bin_tot>r_mask], linewidth=linewidth, label=r"0.01 $\mu$m", linestyle=styles[2], color=color)
-    plt.semilogy(bin_tot[bin_tot>r_mask], m_dust_3[bin_tot>r_mask], linewidth=linewidth, label=r"0.001 $\mu$m", linestyle=styles[3], color=color)
-    plt.legend()
-    plt.title(rf"total dust mass, $t={round(time, 1)}$ Myr")
+    for i, field in enumerate(field_names):
+        plt.semilogy(bin_tot[bin_tot>r_mask], m_dust[i][bin_tot>r_mask], linewidth=linewidth, linestyle=styles[i], color=color)
+        if simulation == "m82" and phase == "cold":
+            if field == "dust_0":
+                plt.plot(0, 0, label=r"1 $\mu$m", linestyle=styles[0], color="black", linewidth=linewidth)
+            if field == "dust_1":
+                plt.plot(0, 0, label=r"0.1 $\mu$m", linestyle=styles[1], color="black", linewidth=linewidth)
+            if field == "dust_2":
+                plt.plot(0, 0, label=r"0.01 $\mu$m", linestyle=styles[2], color="black", linewidth=linewidth)
+            if field == "dust_3": 
+                plt.plot(0, 0, label=r"0.001 $\mu$m", linestyle=styles[3], color="black", linewidth=linewidth)
+            plt.legend(fontsize=13)
+    # plt.title(rf"total dust mass, $t={round(time, 1)}$ Myr")
     # plt.ylim(1e-10, 1e3)
+    plt.ylim(1, 6e5)
+    plt.xlim(0, 10)
     plt.xlabel("r [kpc]")
     plt.ylabel(r"$m_{dust}$ $[M_\odot]$")
-    plt.savefig(os.path.join(basedir, "png", f"{fnum}_dust_total_{phase}_{weight}{tail}.png"), dpi=300)
+    plt.tight_layout()
+    plt.savefig(os.path.join(outdir, f"{simulation}_{fnum}_dust_total_{phase}_{weight}{tail}.png"), dpi=300)
     plt.close()
 
     print(f"Total gas mass: {np.sum(m_gas[bin_tot>r_mask]):e} M_sun")
@@ -197,72 +203,55 @@ def main(basedir, fnum, simulation, phase, weight, tail, r_mask, mode):
         return n1 * r ** (-0.05 * r - 1.08)
     def n_cold(r, n1):
         return n1 * r ** -2
+    
+    fig, ax = plt.subplots(2, 3, figsize=(15, 7.5), sharex=True)
 
-    plt.semilogy(bin_tot, gas_avg, c=density_color, label="avg", linewidth=linewidth)
-    plt.semilogy(bin_tot, gas_med, c=density_color, label="med", linestyle="--", linewidth=linewidth)
-    plt.fill_between(bin_tot, gas_lo, gas_hi, color=density_color, alpha=0.2)
+    ax[0][0].semilogy(bin_tot, gas_avg, c=color, label="avg", linewidth=linewidth)
+    ax[0][0].semilogy(bin_tot, gas_med, c=color, label="med", linestyle="--", linewidth=linewidth)
+    ax[0][0].fill_between(bin_tot, gas_lo, gas_hi, color=color, alpha=0.2)
+
+    lopez_densities = [1.6, 0.8, 4.9, 3.7, 23, 7.9, 5.2, 5.1, 8.4, 4.6, 3.3, 2.6, 3.4, 2.6]  # cm^-3
+    lopez_density_err = [0.1, 0.1, 0.2, 0.2, 0.4, 0.2, 0.3, 0.1, 0.15, 0.14, 0.1, 0.2, 0.2, 0.2]  # cm^-3
+    lopez_distance = [2.08, 2.57, 0.88, 0.76, 0.48, 0.60, 0.69, 1.16, 1.05, 1.73, 1.69, 1.94, 1.87, 1.82]  # kpc
 
     if phase == "hot":
-        plt.plot(bin_tot, n_hot(bin_tot, gas_med[np.where(bin_tot==1)[0][0]]), linewidth=linewidth, label=r"$n\propto r^f$, $f=−0.05r−1.08$", c="k")
+        ax[0][0].plot(bin_tot, n_hot(bin_tot, gas_med[np.where(bin_tot==1)[0][0]]), linewidth=linewidth, label=r"$n\propto r^f$, $f=−0.05r−1.08$", c="k")
     if phase == "cold":
-        plt.plot(bin_tot, n_cold(bin_tot, gas_med[np.where(bin_tot==1)[0][0]]), linewidth=linewidth, label=r"$n\propto r^{-2}$", c="k")
-    plt.legend()
-    plt.title(rf"gas number density, $t={round(time, 1)}$ Myr")
-    plt.xlabel("r [kpc]")
-    plt.ylabel(r"$n_{gas}$ $[cm^{-3}]$")
-    plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_density_{phase}_{weight}{tail}.png"), dpi=300)
-    plt.close()
+        ax[0][0].plot(bin_tot, n_cold(bin_tot, gas_med[np.where(bin_tot==1)[0][0]]), linewidth=linewidth, label=r"$n\propto r^{-2}$", c="k")
+        ax[0][0].errorbar(lopez_distance, lopez_densities, yerr=lopez_density_err, fmt="x", c="k", elinewidth=1, label="Lopez+2025")
+    ax[0][0].legend(fontsize=13)
+    ax[0][0].set_ylabel(r"$n_{gas}$ $[cm^{-3}]$")
 
-    plt.semilogy(bin_tot, v_avg, c=velocity_color, label="avg", linewidth=linewidth)
-    plt.semilogy(bin_tot, v_med, c=velocity_color, label="med", linestyle="--", linewidth=linewidth)
-    plt.fill_between(bin_tot, v_lo, v_hi, color=velocity_color, alpha=0.2)
-    plt.legend()
-    plt.title(rf"gas velocity, $t={round(time, 1)}$ Myr")
-    plt.xlabel("r [kpc]")
-    plt.ylabel(r"$v_{gas}$ $[km\,s^{-1}]$")
-    plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_velocity_{phase}_{weight}{tail}.png"), dpi=300)
-    plt.close()
+    ax[0][1].semilogy(bin_tot, v_avg, c=color, linewidth=linewidth)
+    ax[0][1].semilogy(bin_tot, v_med, c=color, linestyle="--", linewidth=linewidth)
+    ax[0][1].fill_between(bin_tot, v_lo, v_hi, color=color, alpha=0.2)
+    ax[0][1].set_ylabel(r"$v_{gas}$ $[km\,s^{-1}]$")
 
-    plt.plot(bin_tot, np.log10(P_avg), c=pressure_color, label="avg", linewidth=linewidth)
-    plt.plot(bin_tot, np.log10(P_med), c=pressure_color, label="med", linestyle="--", linewidth=linewidth)
-    plt.fill_between(bin_tot, np.log10(P_lo), np.log10(P_hi), color=pressure_color, alpha=0.2)
-    plt.legend()
-    plt.title(rf"pressure, $t={round(time, 1)}$ Myr")
-    plt.xlabel("r [kpc]")
-    plt.ylabel(r"$P/k_B~[K~cm^{-3}]$")
-    plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_pressure_{phase}_{weight}{tail}.png"), dpi=300)
-    plt.close()
+    ax[0][2].plot(bin_tot, np.log10(P_avg), c=color, label="avg", linewidth=linewidth)
+    ax[0][2].plot(bin_tot, np.log10(P_med), c=color, label="med", linestyle="--", linewidth=linewidth)
+    ax[0][2].fill_between(bin_tot, np.log10(P_lo), np.log10(P_hi), color=color, alpha=0.2)
+    ax[0][2].set_ylabel(r"$P/k_B~[K~cm^{-3}]$")
 
-    plt.plot(bin_tot, np.log10(temp_avg), c=temperature_color, label="avg", linewidth=linewidth)
-    plt.plot(bin_tot, np.log10(temp_med), c=temperature_color, label="med", linestyle="--", linewidth=linewidth)
-    plt.fill_between(bin_tot, np.log10(temp_lo), np.log10(temp_hi), color=temperature_color, alpha=0.2)
-    # plt.ylim(3, 5)
-    plt.legend()
-    plt.title(rf"gas temperature, $t={round(time, 1)}$ Myr")
-    plt.xlabel("r [kpc]")
-    plt.ylabel(r"$\log(T_{gas}$ $[K]$)")
-    plt.savefig(os.path.join(basedir, "png", f"{fnum}_gas_temp_{phase}_{weight}{tail}.png"), dpi=300)
-    plt.close()
+    ax[1][0].plot(bin_tot, np.log10(temp_avg), c=color, label="avg", linewidth=linewidth)
+    ax[1][0].plot(bin_tot, np.log10(temp_med), c=color, label="med", linestyle="--", linewidth=linewidth)
+    ax[1][0].fill_between(bin_tot, np.log10(temp_lo), np.log10(temp_hi), color=color, alpha=0.2)
+    ax[1][0].set_xlabel("r [kpc]")
+    ax[1][0].set_ylabel(r"$\log(T_{gas}$ $[K]$)")
 
-    plt.plot(bin_tot, M_avg, c=mach_color, label="avg", linewidth=linewidth)
-    plt.plot(bin_tot, M_med, c=mach_color, label="med", linestyle="--", linewidth=linewidth)
-    plt.fill_between(bin_tot, M_lo, M_hi, color=mach_color, alpha=0.2)
-    # plt.ylim(3, 5)
-    plt.legend()
-    plt.title(rf"Mach number, $t={round(time, 1)}$ Myr")
-    plt.xlabel("r [kpc]")
-    plt.ylabel(r"$M$")
-    plt.savefig(os.path.join(basedir, "png", f"{fnum}_mach_{phase}_{weight}{tail}.png"), dpi=300)
-    plt.close()
+    ax[1][1].plot(bin_tot, M_avg, c=color, label="avg", linewidth=linewidth)
+    ax[1][1].plot(bin_tot, M_med, c=color, label="med", linestyle="--", linewidth=linewidth)
+    ax[1][1].fill_between(bin_tot, M_lo, M_hi, color=color, alpha=0.2)
+    ax[1][1].set_xlabel("r [kpc]")
+    ax[1][1].set_ylabel(r"$M$")
 
-    plt.semilogy(bin_tot, S_avg, c=entropy_color, label="avg", linewidth=linewidth)
-    plt.semilogy(bin_tot, S_med, c=entropy_color, label="med", linestyle="--", linewidth=linewidth)
-    plt.fill_between(bin_tot, S_lo, S_hi, color=entropy_color, alpha=0.2)
-    plt.legend()
-    plt.title(rf"entropy, $t={round(time, 1)}$ Myr")
-    plt.xlabel("r [kpc]")
-    plt.ylabel(r"$S/k_B~[K\,cm^{-3}]$")
-    plt.savefig(os.path.join(basedir, "png", f"{fnum}_entropy_{phase}_{weight}{tail}.png"), dpi=300)
+    ax[1][2].semilogy(bin_tot, S_avg, c=color, label="avg", linewidth=linewidth)
+    ax[1][2].semilogy(bin_tot, S_med, c=color, label="med", linestyle="--", linewidth=linewidth)
+    ax[1][2].fill_between(bin_tot, S_lo, S_hi, color=color, alpha=0.2)
+    ax[1][2].set_xlabel("r [kpc]")
+    ax[1][2].set_ylabel(r"$S/k_B~[K\,cm^{-3}]$")
+    
+    plt.tight_layout()
+    plt.savefig(os.path.join(outdir, f"{simulation}_{fnum}_{phase}_{weight}{tail}.png"), dpi=300)
     plt.close()
 
 
@@ -273,6 +262,7 @@ if __name__ == "__main__":
     import hconfig
 
     basedir = args.basedir
+    outdir = args.outdir
     fnum = args.fnum
     simulation = args.simulation
     phase = args.phase
@@ -280,5 +270,6 @@ if __name__ == "__main__":
     tail = args.tail
     r_mask = args.rmask
     mode = args.mode
+    field_names = args.field_names
 
-    main(basedir, fnum, simulation, phase, weight, tail, r_mask, mode)
+    main(basedir, outdir, fnum, simulation, phase, weight, tail, r_mask, mode, field_names)
