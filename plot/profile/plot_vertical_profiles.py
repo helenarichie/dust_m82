@@ -90,7 +90,7 @@ def main(basedir, outdir, fig_name, field_names, time, exclude_disk, ymin, ymax,
             # ax[j].text(.05, .93, r"$a=0.001~\mu$m", horizontalalignment='left', verticalalignment='center', transform = ax[j].transAxes, fontsize=fontsize-5)
     ax[legend_panel].legend(loc=legend_loc, fontsize=fontsize-5)
     plt.tight_layout()
-    plt.savefig(os.path.join(outdir, f"{fig_name}.png"), dpi=300)
+    plt.savefig(os.path.join(outdir, f"{fig_name}.png"), dpi=300, bbox_inches="tight")
     plt.close()
 
 
