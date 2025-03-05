@@ -35,7 +35,7 @@ def main(basedir, fnums, vmin, vmax, mode):
     cbar_width = 0.3
     fig_width = len(fnums) * panel_width + cbar_width
     cbar_gridspec = (panel_width + cbar_width) / panel_width
-    time_x, time_y = 9.5, 19
+    time_x, time_y = 0.75, 19
     vlim_dens = [3.8, 9.5]
 
     width_ratios = []
@@ -99,7 +99,7 @@ def main(basedir, fnums, vmin, vmax, mode):
             cbar.set_label(clabel_dens, rotation=270, labelpad=25, fontsize=18)
             cbar.ax.tick_params(axis="y", direction="in", color="white")
         print(t)
-        ax[i].text(time_x, time_y, f"{t/1e3:.0f} Myr", ha="right", va="center", color="white")
+        ax[i].text(time_x, time_y, f"{t/1e3:.0f} Myr", ha="left", va="center", color="white")
 
     fig.savefig(pngdir + f"/gas_proj_evolve_{mode}.png", dpi=300, bbox_inches="tight")
     plt.close()
