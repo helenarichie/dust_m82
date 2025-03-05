@@ -11,7 +11,7 @@ import sys
 sys.path.insert(0, os.path.join(pathlib.Path(__file__).parent.resolve(), "../../utils/"))
 from read_cmdline import read_cmdline
 
-def main(basedir, ns, ne, vmin=0, vmax=8, mode):
+def main(basedir, field_names, ns, ne, mode, vmin=0, vmax=8):
     # define data directories
     datadir = os.path.join(basedir, "hdf5", "proj")
     pngdir = os.path.join(basedir, "png", "dust_proj")
@@ -90,11 +90,7 @@ def main(basedir, ns, ne, vmin=0, vmax=8, mode):
                 ax[i].hlines(sbar_y, sbar_x, sbar_x + (xticks[1] - xticks[0]), linewidth=linewidth, colors="white")
                 ax[i].text(text_x, sbar_y, sbar_label, ha="right", va="center", color="white")
             
-<<<<<<< HEAD:plot/plot_dust_proj.py
             if (i == len(field_names)-1):
-=======
-            if (i == 3) or (len(fields) == 1):
->>>>>>> a71f3038163e51efee9598213a934e067153b013:plot/image/plot_dust_proj.py
                 divider = make_axes_locatable(ax[i])
                 cax = divider.append_axes("right", size="5%", pad=0.05)
                 cbar = fig.colorbar(im, ax=ax[i], cax=cax)
@@ -132,12 +128,8 @@ if __name__ == "__main__":
     sys.path.insert(0, args.configdir)
     import hconfig
 
-<<<<<<< HEAD:plot/plot_dust_proj.py
     mode = "light"
     if args.mode == "dark":
         mode = "dark"
 
-    main(basedir, field_names, ns, ne, vmin, vmax, mode)
-=======
-    main(basedir, ns, ne, vmin, vmax, mode)
->>>>>>> a71f3038163e51efee9598213a934e067153b013:plot/image/plot_dust_proj.py
+    main(basedir, field_names, ns, ne, mode, vmin, vmax)
