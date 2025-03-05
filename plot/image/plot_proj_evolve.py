@@ -11,7 +11,7 @@ import sys
 sys.path.insert(0, os.path.join(pathlib.Path(__file__).parent.resolve(), "../../utils/"))
 from read_cmdline import read_cmdline
 
-def main(basedir, fnums, vmin, vmax, mode):
+def main(basedir, field_name, fnums, vmin, vmax, mode):
     # define data directories
     datadir = os.path.join(basedir, "hdf5", "proj")
     pngdir = os.path.join(basedir, "png")
@@ -22,8 +22,21 @@ def main(basedir, fnums, vmin, vmax, mode):
 
     matplotlib.rcParams.update({'font.size': 15})
 
-    cmap = sns.color_palette("mako", as_cmap=True)
-    clabel_dens = r'$\mathrm{log}_{10}(\Sigma_{gas})$ [$\mathrm{M}_\odot\,\mathrm{kpc}^{-2}$]'
+    if field_name == "gas":
+        cmap = sns.color_palette("mako", as_cmap=True)
+        clabel_dens = r'$\mathrm{log}_{10}(\Sigma_{gas})$ [$\mathrm{M}_\odot\,\mathrm{kpc}^{-2}$]'
+        field_h5 = "d_xz"
+        vlim_dens = [3.8, 9.5]
+    if field_name == "dust":
+        cmap = sns.color_palette("rocket", as_cmap=True)
+        clabel_dens = r'$\mathrm{log}_{10}(\Sigma_{dust})$ [$\mathrm{M}_\odot\,\mathrm{kpc}^{-2}$]'
+        field_h5 = "d_dust_1_xz"
+        vlim_dens = [0, 8]
+
+    if vmin == None:
+        vmin = vlim_dens[0]
+    if vmax == None:
+        vmax = vlim_dens[1]
 
     xticks = [2, 4, 6, 8]
     yticks = [2, 4, 6, 8, 10, 12, 14, 16, 18]
@@ -36,7 +49,7 @@ def main(basedir, fnums, vmin, vmax, mode):
     fig_width = len(fnums) * panel_width + cbar_width
     cbar_gridspec = (panel_width + cbar_width) / panel_width
     time_x, time_y = 0.75, 19
-    vlim_dens = [3.8, 9.5]
+    grain_size_x = 9.5
 
     width_ratios = []
     for i in fnums:
@@ -65,7 +78,7 @@ def main(basedir, fnums, vmin, vmax, mode):
         xlen = nx*dx
         ylen = nz*dx
         t = head["t"][0]
-        field = np.array(f["d_xz"])
+        field = np.array(f[field_h5])
 
         if len(fnums) == 1:
             ax = [ax]
@@ -82,7 +95,7 @@ def main(basedir, fnums, vmin, vmax, mode):
         ax[i].tick_params(axis="both", which="both", direction="in", color="white", labeltop=False, 
                             labelbottom=False, labelleft=False, labelright=False, top=1, right=1, bottom=1,
                             left=1)
-        im = ax[i].imshow(np.log10(field.T), origin="lower", vmin=vlim_dens[0], vmax=vlim_dens[1], extent=[0, xlen, 0, ylen], cmap=cmap,
+        im = ax[i].imshow(np.log10(field.T), origin="lower", vmin=vmin, vmax=vmax, extent=[0, xlen, 0, ylen], cmap=cmap,
                             aspect="auto")
         
         ax[i].set_xticks(xticks)
@@ -98,10 +111,12 @@ def main(basedir, fnums, vmin, vmax, mode):
             cbar = fig.colorbar(im, ax=ax[i], cax=cax)
             cbar.set_label(clabel_dens, rotation=270, labelpad=25, fontsize=18)
             cbar.ax.tick_params(axis="y", direction="in", color="white")
-        print(t)
-        ax[i].text(time_x, time_y, f"{t/1e3:.0f} Myr", ha="left", va="center", color="white")
 
-    fig.savefig(pngdir + f"/gas_proj_evolve_{mode}.png", dpi=300, bbox_inches="tight")
+        ax[i].text(time_x, time_y, f"{t/1e3:.0f} Myr", ha="left", va="center", color="white")
+        if field_name == "dust":
+            ax[i].text(grain_size_x, time_y, "$0.1~{\mu m}$", ha="right", va="center", color="white")
+
+    fig.savefig(pngdir + f"/{field_name}_proj_evolve_{mode}.png", dpi=300, bbox_inches="tight")
     plt.close()
     
     print(f"Saving figure.\n") 
@@ -111,6 +126,7 @@ if __name__ == "__main__":
 
     basedir = args.basedir
     fnums = args.field_names
+    field_name = args.fig_name
     vmin = args.ymin
     vmax = args.ymax
     mode = args.mode
@@ -122,4 +138,4 @@ if __name__ == "__main__":
     if args.mode == "dark":
         mode = "dark"
 
-    main(basedir, fnums, vmin, vmax, mode)
+    main(basedir, field_name, fnums, vmin, vmax, mode)
