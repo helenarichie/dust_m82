@@ -37,6 +37,7 @@ def main(basedir, outdir, fig_name, field_names, time, ymin, ymax, mode):
         ax[i].plot(time_output[:wh_time]/1e3, rates_hot[i][:wh_time], color=color_hot, linestyle="solid", linewidth=linewidth, label="hot")
         ax[i].plot(time_output[:wh_time]/1e3, rates_mixed[i][:wh_time], color=color_mixed, linestyle="solid", linewidth=linewidth, label="mixed")
         ax[i].plot(time_output[:wh_time]/1e3, rates_cool[i][:wh_time], color=color_cool, linestyle="solid", linewidth=linewidth, label="cool")
+        ax[i].plot(time_output[:wh_time]/1e3, rates_hot[i][:wh_time]+rates_mixed[i][:wh_time]+rates_cool[i][:wh_time], color="grey", linestyle="solid", linewidth=linewidth, label="total", alpha=0.5)
 
         ax[i].tick_params(axis="both", which="both", labelsize=15, top=True, right=True)
         ax[i].set_xlabel(r"$Time~[Myr]$", fontsize=fontsize)
