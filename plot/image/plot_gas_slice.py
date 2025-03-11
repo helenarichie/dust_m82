@@ -36,7 +36,7 @@ def main(basedir, ns, ne, slice, mode, plot_lines, angle):
     cmap_gas = sns.color_palette("crest_r", as_cmap=True)
     cmap_temp = sns.color_palette("flare_r", as_cmap=True)
     matplotlib.rcParams.update({'font.size': 15})
-    clabel_dens = r'$\log_{10}(\rho_{gas}~[M_\odot\,kpc^{-3}])$'
+    clabel_dens = r'$\log_{10}(n_{H}~[cm^{-3}])$'
     clabel_temp = r'$\log_{10}(T~[K])$'
 
     if slice == "xz":
@@ -108,7 +108,10 @@ def main(basedir, ns, ne, slice, mode, plot_lines, angle):
             ax_i.set_xticks(xticks)
             ax_i.set_yticks(yticks)
 
-        im_dens = ax[0].imshow(np.log10(gas_density.T), origin="lower", vmin=vlim_dens[0], vmax=vlim_dens[1], extent=[0, xlen, 0, ylen], cmap=cmap_gas, aspect="auto", zorder=-1)
+        number_density_conversion = density_unit / (mu * MP)
+        gas_density *= number_density_conversion
+
+        im_dens = ax[0].imshow(np.log10(gas_density.T), origin="lower", vmin=vlim_dens[0] + np.log10(number_density_conversion), vmax=vlim_dens[1] + np.log10(number_density_conversion), extent=[0, xlen, 0, ylen], cmap=cmap_gas, aspect="auto", zorder=-1)
         im_temp = ax[1].imshow(np.log10(temperature.T), origin="lower", vmin=vlim_temp[0], vmax=vlim_temp[1], extent=[0, xlen, 0, ylen], cmap=cmap_temp, aspect="auto", zorder=-1)
 
         if plot_lines:
