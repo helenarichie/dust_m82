@@ -39,8 +39,8 @@ def main(basedir, outdir, fig_name, field_names, time, exclude_disk, ymin, ymax,
         text_x, text_y, alignment = .05, .92, "left"
     if field_names[0].startswith("gas"):
         ylabel = "gas"
-        legend_loc = "upper left"
-        legend_panel = 0
+        legend_loc = "upper right"
+        legend_panel = 2
         text_x, text_y, alignment = .05, .92, "left"
     
 
