@@ -1,2 +1,3 @@
 .DS_Store
 plot/.DS_Store
+*/__pycache__
