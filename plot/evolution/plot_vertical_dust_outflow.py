@@ -4,58 +4,18 @@ import numpy as np
 import os
 import seaborn as sns
 import sys
+import pathlib
+sys.path.insert(0, os.path.join(pathlib.Path(__file__).parent.resolve(), "../../utils/"))
+from read_cmdline import read_cmdline
+from read_vertical_outflow_rates import read_vertical_outflow_rates
 
-def read_cmdline():
-    p = argparse.ArgumentParser()
-    p.add_argument("-b", "--basedir", type=str, required=True)
-    p.add_argument("-c", "--configdir", type=str, required=True)
-    p.add_argument("-o", "--outdir", type=str, required=True)
-    p.add_argument("-n", "--fig-name", type=str, required=True)
-    p.add_argument('-t', '--tmax', type=float, required=False, default=-1)
-    p.add_argument("-l", "--ymin", type=float, required=False, default=-1)
-    p.add_argument("-u", "--ymax", type=float, required=False, default=-1)
-    p.add_argument("-m", "--mode", type=str, choices=["dark", "light"], required=False, default="light")
-    p.add_argument('-f', '--field-names', nargs="+", default=[])
-    args = p.parse_args()
-    return args
 
-def main(basedir, outdir, field_names, tmax, ymin, ymax, fig_name, mode):
-    csvdir = os.path.join(basedir, "csv/old/")
+def main(basedir, outdir, field_names, time, ymin, ymax, fig_name, mode):
+    csvdir = os.path.join(basedir, "profiles/vertical/csv/outflow_rates/")
 
-    rates_hot = []
-    for field in field_names:
-        rate_i = []
-        with open(os.path.join(csvdir, f"rate_{field}_hot_1e-24.csv")) as f:
-            for line in f:
-                line = line.split(",")
-                rate_i.append(np.array(line, dtype=float))
-        rates_hot.append(rate_i)
+    time_output, rates_hot, rates_mixed, rates_cool = read_vertical_outflow_rates(csvdir, field_names)
 
-    rates_mixed = []
-    for field in field_names:
-        rate_i = []
-        with open(os.path.join(csvdir, f"rate_{field}_mixed_1e-24.csv")) as f:
-            for line in f:
-                line = line.split(",")
-                rate_i.append(np.array(line, dtype=float))
-        rates_mixed.append(rate_i)
-
-    rates_cool = []
-    for field in field_names:
-        rate_i = []
-        with open(os.path.join(csvdir, f"rate_{field}_cool_1e-24.csv")) as f:
-            for line in f:
-                line = line.split(",")
-                rate_i.append(np.array(line, dtype=float))
-        rates_cool.append(rate_i)
-
-    time_output = []
-    with open(os.path.join(csvdir, "time_output_1e-24.csv")) as f:
-        for line in f:
-            time_output.append(float(line))
-    time_output = np.array(time_output)
-
-    dt_out = time_output[2] - time_output[1]
+    dt_out = time_output[1] - time_output[0]
 
     mass_out_hot = []
     for rate in rates_hot:
@@ -91,18 +51,23 @@ def main(basedir, outdir, field_names, tmax, ymin, ymax, fig_name, mode):
     mass_out_cool = np.array(mass_out_cool)
     
     # plot outflow rates
-    if tmax == -1:
-        tmax = time_output[-1]
+    if time == -1:
+        time = time_output[-1]
 
-    time_mask = np.where(time_output <= tmax)
+    time_mask = np.where(time_output <= time)
 
-    if ymin == -1:
-        ymin = None
-    if ymax == -1:
-        ymax = None
-
-    xmin = np.amin(time_output[time_mask]/1e3)
-    xmax = np.amax(time_output[time_mask]/1e3)
+    pad = 0.1
+    fontsize = 20
+    linewidth = 3
+    color_hot, color_mixed, color_cool = sns.color_palette(palette="flare", n_colors=3)
+    styles = ["solid", "dashed", "dashdot", "dotted"]
+    legend_loc = "lower left"
+    legend_panel = len(field_names)-1
+    text_x, text_y, alignment = .05, .92, "left"
+    color = "black"
+    if mode == "dark":
+        plt.style.use('dark_background')
+        color = "white"
 
     linewidth = 3
     color_hot, color_mixed, color_cool = sns.color_palette(palette="flare", n_colors=3)
@@ -113,49 +78,37 @@ def main(basedir, outdir, field_names, tmax, ymin, ymax, fig_name, mode):
         line_color = "white"
         plt.style.use('dark_background')
 
-    fig, ax = plt.subplots(1, 3, figsize=(15, 5), sharey=True)
+    fig, ax = plt.subplots(1, len(field_names), figsize=(15, 4.5), sharey=True)
 
-    for i, grain in enumerate(field_names):
-        ax[0].plot(time_output[time_mask]/1e3, mass_out_hot[i][time_mask], linestyle=styles[i], linewidth=linewidth, c=color_hot)
-    ax[0].tick_params(axis='both', which="both", labelsize=15, top=True, right=True)
-    ax[0].set_yscale('log')
-    ax[0].set_ylabel(r"$m_{out}~[M_\odot]$", fontsize=20)
-    ax[0].set_xlabel(r"$t~[Myr]$", fontsize=20)
-    ax[0].set_xlim(xmin, xmax)
-    ax[0].set_ylim(ymin, ymax)
-    # ax[0].vlines(30, ymin=ymin, ymax=ymax, linewidth=linewidth-0.5, zorder=0, color="lightgrey", alpha=0.7)
+    for i, field in enumerate(field_names):
+        ax[i].semilogy(time_output[time_mask]/1e3, mass_out_hot[i][time_mask], color=color_hot, linestyle="solid", linewidth=linewidth, label="hot")
+        ax[i].semilogy(time_output[time_mask]/1e3, mass_out_mixed[i][time_mask], color=color_mixed, linestyle="solid", linewidth=linewidth, label="mixed")
+        ax[i].semilogy(time_output[time_mask]/1e3, mass_out_cool[i][time_mask], color=color_cool, linestyle="solid", linewidth=linewidth, label="cool")
+        ax[i].semilogy(time_output[time_mask]/1e3, (mass_out_hot[i][time_mask]+mass_out_mixed[i][time_mask]+mass_out_cool[i][time_mask]), color="grey", linestyle="solid", linewidth=linewidth, label="total", alpha=0.5)
 
-    for i, grain in enumerate(field_names):
-        ax[1].plot(time_output[time_mask]/1e3, mass_out_mixed[i][time_mask], linestyle=styles[i], linewidth=linewidth, c=color_mixed)
-    ax[1].tick_params(axis='both', which="both", labelsize=15, top=True, right=True)
-    ax[1].set_yscale('log')
-    ax[1].set_xlabel(r"$t~[Myr]$", fontsize=20)
-    ax[1].set_xlim(xmin, xmax)
-    ax[1].set_ylim(ymin, ymax)
-    # ax[1].vlines(30, ymin=ymin, ymax=ymax, linewidth=linewidth-0.5, zorder=0, color="lightgrey", alpha=0.7)
+        ax[i].tick_params(axis="both", which="both", right=True, labelsize=15, top=True)
+        ax[i].set_xlabel(r"$Time~[Myr]$", fontsize=fontsize)
+        ax[i].set_xlim(0, time/1e3)
+        ax[i].set_ylim(10, 1e5)
+        
+        if i == 0:
+            ax[i].set_ylabel(r"${m}_{dust}~[M_\odot]$", fontsize=fontsize)
 
-    for i, grain in enumerate(field_names):
-        ax[2].plot(time_output[time_mask]/1e3, mass_out_cool[i][time_mask], linestyle=styles[i], linewidth=linewidth, c=color_cool)
-    ax[2].tick_params(axis='both', which="both", labelsize=15, top=True, right=True)
-    ax[2].set_yscale('log')
-    ax[2].set_xlabel(r"$t~[Myr]$", fontsize=20)
-    ax[2].set_xlim(xmin, xmax)
-    ax[2].set_ylim(ymin, ymax)
-    # ax[2].vlines(30, ymin=ymin, ymax=ymax, linewidth=linewidth-0.5, zorder=0, color="lightgrey", alpha=0.7)
-    for i, name in enumerate(field_names):
-        if name == "dust_0":
-            ax[2].plot(0, 0, linestyle=styles[i], label=r"$a=1~\mu$m", c=line_color, linewidth=linewidth)
-        if name == "dust_1":
-            ax[2].plot(0, 0, linestyle=styles[i], label=r"$a=0.1~\mu$m", c=line_color, linewidth=linewidth)
-        if name == "dust_2":
-            ax[2].plot(0, 0, linestyle=styles[i], label=r"$a=0.01~\mu$m", c=line_color, linewidth=linewidth)
-        if name == "dust_3":
-            ax[2].plot(0, 0, linestyle=styles[i], label=r"$a=0.001~\mu$m", c=line_color, linewidth=linewidth)
-    ax[2].legend(fontsize=15, loc="upper left")
+        # ax[i].axvline(15)
+
+        if field.endswith("_0"):
+            ax[i].text(text_x, text_y, r"$1~\mu$m", c=color, horizontalalignment=alignment, verticalalignment="center", transform=ax[i].transAxes, fontsize=fontsize-5)
+        if field.endswith("_1"):
+            ax[i].text(text_x, text_y, r"$0.1~\mu$m", c=color, horizontalalignment=alignment, verticalalignment="center", transform=ax[i].transAxes, fontsize=fontsize-5)
+        if field.endswith("_2"):
+            ax[i].text(text_x, text_y, r"$0.01~\mu$m", c=color, horizontalalignment=alignment, verticalalignment="center", transform=ax[i].transAxes, fontsize=fontsize-5)
+        if field.endswith("_3"):
+            ax[i].text(text_x, text_y, r"$0.001~\mu$m", c=color, horizontalalignment=alignment, verticalalignment="center", transform=ax[i].transAxes, fontsize=fontsize-5)
+
+    ax[legend_panel].legend(loc=legend_loc, fontsize=fontsize-5)
 
     plt.tight_layout()
-    plt.savefig(outdir + f"mass_out_{fig_name}.png", dpi=300)
-    plt.close()
+    plt.savefig(os.path.join(outdir, fig_name), dpi=300, bbox_inches="tight")
 
 if __name__ == "__main__":
     args = read_cmdline()
@@ -166,10 +119,10 @@ if __name__ == "__main__":
     basedir = args.basedir
     outdir = args.outdir
     mode = args.mode
-    tmax = args.tmax
+    time = args.time
     ymin = args.ymin
     ymax = args.ymax
     fig_name = args.fig_name
     field_names = args.field_names
 
-    main(basedir, outdir, field_names, tmax, ymin, ymax, fig_name, mode)
+    main(basedir, outdir, field_names, time, ymin, ymax, fig_name, mode)
