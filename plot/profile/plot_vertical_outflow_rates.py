@@ -12,12 +12,18 @@ def main(basedir, outdir, fig_name, field_names, time, ymin, ymax, mode):
     csvdir = os.path.join(basedir, "profiles/vertical/csv/outflow_rates/")
     time_output, rates_hot, rates_mixed, rates_cool = read_vertical_outflow_rates(csvdir, field_names)
 
+    if fig_name.startswith("m82"):
+        SFR = 5
+    if fig_name.startswith("highz"):
+        SFR = 20
+
     rates_hot = np.sum(rates_hot, axis=2)
     rates_mixed = np.sum(rates_mixed, axis=2)
     rates_cool = np.sum(rates_cool, axis=2)
 
     wh_time = np.where(time_output == time)[0][0]
 
+    pad = 0.1
     fontsize = 20
     linewidth = 3
     color_hot, color_mixed, color_cool = sns.color_palette(palette="flare", n_colors=3)
@@ -29,20 +35,39 @@ def main(basedir, outdir, fig_name, field_names, time, ymin, ymax, mode):
     if mode == "dark":
         plt.style.use('dark_background')
         color = "white"
+    ymin = np.amin(rates_hot[0][:wh_time]+rates_mixed[0][:wh_time]+rates_cool[0][:wh_time])
+    ymax = np.amax(rates_hot[0][:wh_time]+rates_mixed[0][:wh_time]+rates_cool[0][:wh_time])
 
     fig, ax = plt.subplots(1, len(field_names), figsize=(15, 4.5), sharey=True)
 
     for i, field in enumerate(field_names):
-        
+
         ax[i].plot(time_output[:wh_time]/1e3, rates_hot[i][:wh_time], color=color_hot, linestyle="solid", linewidth=linewidth, label="hot")
         ax[i].plot(time_output[:wh_time]/1e3, rates_mixed[i][:wh_time], color=color_mixed, linestyle="solid", linewidth=linewidth, label="mixed")
         ax[i].plot(time_output[:wh_time]/1e3, rates_cool[i][:wh_time], color=color_cool, linestyle="solid", linewidth=linewidth, label="cool")
-        ax[i].plot(time_output[:wh_time]/1e3, rates_hot[i][:wh_time]+rates_mixed[i][:wh_time]+rates_cool[i][:wh_time], color="grey", linestyle="solid", linewidth=linewidth, label="total", alpha=0.5)
+        ax[i].plot(time_output[:wh_time]/1e3, (rates_hot[i][:wh_time]+rates_mixed[i][:wh_time]+rates_cool[i][:wh_time]), color="grey", linestyle="solid", linewidth=linewidth, label="total", alpha=0.5)
 
-        ax[i].tick_params(axis="both", which="both", labelsize=15, top=True, right=True)
+        ax[i].tick_params(axis="both", which="both", labelsize=15, top=True)
         ax[i].set_xlabel(r"$Time~[Myr]$", fontsize=fontsize)
         ax[i].set_xlim(0, time/1e3)
-        ax[i].set_ylim(ymin, ymax)
+        ax[i].set_ylim(ymin-pad, ymax+pad)
+        
+        twin = ax[i].twinx()
+        
+        twin.plot(time_output[:wh_time]/1e3, rates_hot[i][:wh_time]/SFR, color=color_hot, linestyle="solid", linewidth=linewidth, label="hot")
+        twin.plot(time_output[:wh_time]/1e3, rates_mixed[i][:wh_time]/SFR, color=color_mixed, linestyle="solid", linewidth=linewidth, label="mixed")
+        twin.plot(time_output[:wh_time]/1e3, rates_cool[i][:wh_time]/SFR, color=color_cool, linestyle="solid", linewidth=linewidth, label="cool")
+        twin.plot(time_output[:wh_time]/1e3, (rates_hot[i][:wh_time]+rates_mixed[i][:wh_time]+rates_cool[i][:wh_time])/SFR, color="grey", linestyle="solid", linewidth=linewidth, label="total", alpha=0.5)
+        twin.set_ylim((ymin-pad)/SFR, (ymax+pad)/SFR)
+        if i != (len(field_names)-1):
+            twin.tick_params(labelright=False)
+        else:
+            twin.set_ylabel(r"$\dot{m}_\mathrm{dust}/SFR$", fontsize=fontsize, rotation=270, labelpad=25)
+        
+        if i == 0:
+            ax[i].set_ylabel(r"$\dot{m}_{dust}~[M_\odot\,yr^{-1}]$", fontsize=fontsize)
+
+        # ax[i].axvline(15)
 
         if field.endswith("_0"):
             ax[i].text(text_x, text_y, r"$1~\mu$m", c=color, horizontalalignment=alignment, verticalalignment="center", transform=ax[i].transAxes, fontsize=fontsize-5)
@@ -52,8 +77,6 @@ def main(basedir, outdir, fig_name, field_names, time, ymin, ymax, mode):
             ax[i].text(text_x, text_y, r"$0.01~\mu$m", c=color, horizontalalignment=alignment, verticalalignment="center", transform=ax[i].transAxes, fontsize=fontsize-5)
         if field.endswith("_3"):
             ax[i].text(text_x, text_y, r"$0.001~\mu$m", c=color, horizontalalignment=alignment, verticalalignment="center", transform=ax[i].transAxes, fontsize=fontsize-5)
-    
-    ax[0].set_ylabel(r"$\dot{m}_{dust}~[M_\odot\,yr^{-1}]$", fontsize=fontsize)
 
     ax[legend_panel].legend(loc=legend_loc, fontsize=fontsize-5)
 
