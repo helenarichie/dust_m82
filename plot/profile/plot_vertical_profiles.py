@@ -13,7 +13,7 @@ from read_vertical_profiles import read_vertical_profiles
 def main(basedir, outdir, fig_name, field_names, time, exclude_disk, ymin, ymax, mode):
     csvdir = os.path.join(basedir, "profiles/vertical/csv/short/")
 
-    norm = True
+    norm = False
 
     disk_i = 0
     d_arr = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
@@ -73,7 +73,7 @@ def main(basedir, outdir, fig_name, field_names, time, exclude_disk, ymin, ymax,
             ax[j].set_ylabel(y_ax_label, fontsize=fontsize)
         ax[j].set_xlabel(r"$z~[kpc]$", fontsize=fontsize)
         ax[j].set_xlim(1-pad, np.amax(d_arr)+pad)
-        ax[j].set_ylim(ymin, 55)
+        ax[j].set_ylim(ymin, ymax)
 
         if name.endswith("_0"):
             ax[legend_panel].plot(0, 0, linestyle=styles[j], label=r"$1~\mu$m", c=color, linewidth=linewidth)
