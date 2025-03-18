@@ -13,7 +13,7 @@ from read_vertical_profiles import read_vertical_profiles
 def main(basedir, outdir, fig_name, field_names, time, exclude_disk, ymin, ymax, mode):
     csvdir = os.path.join(basedir, "profiles/vertical/csv/short/")
 
-    norm = False
+    norm = True
 
     disk_i = 0
     d_arr = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
