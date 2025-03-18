@@ -92,7 +92,7 @@ def main(basedir, outdir, field_names, time, ymin, ymax, fig_name, mode):
         ax[i].set_ylim(10, 1e5)
         
         if i == 0:
-            ax[i].set_ylabel(r"${m}_{dust}~[M_\odot]$", fontsize=fontsize)
+            ax[i].set_ylabel(r"${m}_{dust,out}~[M_\odot]$", fontsize=fontsize)
 
         # ax[i].axvline(15)
 
