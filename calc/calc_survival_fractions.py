@@ -13,6 +13,7 @@ def main(basedir, time, field_names, exclude_disk):
 
     disk_i = 0
     if exclude_disk:
+        print("excluding!")
         disk_i = 1
 
     sputtered_names = []
@@ -26,11 +27,11 @@ def main(basedir, time, field_names, exclude_disk):
         if field == "dust_3":
             sputtered_names.append("sputtered_3")
 
-    csvdir = os.path.join(basedir, "csv/short/")
+    csvdir = os.path.join(basedir, "profiles/vertical/csv/short/")
 
     times, sputtered_hot, sputtered_mixed, sputtered_cool = read_vertical_profiles(csvdir, sputtered_names)
 
-    csvdir = os.path.join(basedir, "csv/outflow_rates/")
+    csvdir = os.path.join(basedir, "profiles/vertical/csv/outflow_rates/")
 
     time_output, rates_hot, rates_mixed, rates_cool = read_vertical_outflow_rates(csvdir, field_names)
 
