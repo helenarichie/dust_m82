@@ -85,11 +85,12 @@ def main(basedir, outdir, field_names, time, ymin, ymax, fig_name, mode):
         ax[i].semilogy(time_output[time_mask]/1e3, mass_out_mixed[i][time_mask], color=color_mixed, linestyle="solid", linewidth=linewidth, label="mixed")
         ax[i].semilogy(time_output[time_mask]/1e3, mass_out_cool[i][time_mask], color=color_cool, linestyle="solid", linewidth=linewidth, label="cool")
         ax[i].semilogy(time_output[time_mask]/1e3, (mass_out_hot[i][time_mask]+mass_out_mixed[i][time_mask]+mass_out_cool[i][time_mask]), color="grey", linestyle="solid", linewidth=linewidth, label="total", alpha=0.5)
+        ax[i].axvline(30, zorder=0, linewidth=linewidth, color="grey", linestyle="--", alpha=0.5)
 
         ax[i].tick_params(axis="both", which="both", right=True, labelsize=15, top=True)
         ax[i].set_xlabel(r"$Time~[Myr]$", fontsize=fontsize)
         ax[i].set_xlim(0, time/1e3)
-        ax[i].set_ylim(10, 1e5)
+        ax[i].set_ylim(10, 3e5)
         
         if i == 0:
             ax[i].set_ylabel(r"${m}_{dust,out}~[M_\odot]$", fontsize=fontsize)
