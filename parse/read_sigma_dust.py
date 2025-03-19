@@ -21,8 +21,10 @@ def main(basedir, outdir, fnum, field_names):
         field = np.array(f["d_" + f"{field_name}" + "_xz"])
 
         theta = np.pi / 6  # 30 degrees in radians
-        bins = np.zeros(80)
-        bin_count = np.zeros(80)
+        bins = []
+        for i in range(0, 80):
+            bins.append([])
+        bin_ind = np.linspace(0, 10, 80)
         dr = 0.125  # bin width in kpc
 
         mask = np.zeros((nx, nz), dtype=bool)
@@ -33,11 +35,8 @@ def main(basedir, outdir, fnum, field_names):
                 r = np.sqrt(x_coord ** 2 + z_coord ** 2)
                 theta_i = np.arccos(abs(z_coord) / r)
                 if theta_i < (theta):
-                    print(theta_i, theta)
-                    bin_i = r / dr
-                    wh_bin = np.argmin(abs(bins - bin_i))
-                    bins[wh_bin] += field[x_i, z_i]
-                    bin_count[wh_bin] += 1
+                    wh_bin = np.argmin(abs(bin_ind - r * dx))
+                    bins[wh_bin].append(field[x_i, z_i])
                 else:
                     field[x_i, z_i] = 0
 
@@ -48,8 +47,10 @@ def main(basedir, outdir, fnum, field_names):
         # fig.savefig(pngdir + f"/{fnum}.png", dpi=300, bbox_inches="tight")
         # plt.close()
 
-        print(bins / bin_count)
-
+        av_dens = []
+        for bin in bins:
+            av_dens.append(np.average(bin))
+        print(av_dens)
 
 if __name__ == "__main__":
     args = read_cmdline()
