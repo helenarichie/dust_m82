@@ -10,26 +10,13 @@ from read_radial_profile import read_radial_profile
 from calc_cooling_time import calc_cooling_time
 from calc_tau_sp import calc_tau_sp
 
-def main(basedir, outdir, fig_name, time, simulation, weight, tail):
+def main(outdir, fig_name, time, weight, tail):
     fnum = int(time * 2 / 100)
+    r_max = 5
 
-    radial_dir = os.path.join(basedir, "profiles/radial/")
-
-    bin_tot, _, _, density_hot, _, temp_hot, _, _, _, _ = read_radial_profile(radial_dir, fnum, simulation, "hot", weight, tail)
-    _, _, _, density_cool, _, temp_cool, _, _, _, _ = read_radial_profile(radial_dir, fnum, simulation, "cold", weight, tail)
-
-    bin_tot = np.array(bin_tot)
-
-    # median values
-    density_hot, density_cool, temp_hot, temp_cool = np.array(density_hot[1]), np.array(density_cool[1]), np.array(temp_hot[1]), np.array(temp_cool[1])
-
-    density_mixed = np.sqrt(density_cool * density_hot)
-    temp_mixed = np.sqrt(temp_cool * temp_hot)
-
-    t_cool_mixed = []
-    for coord in zip(density_mixed, temp_mixed):
-        t_cool_mixed.append(calc_cooling_time(coord[0], coord[1]))
-    t_cool_mixed = np.array(t_cool_mixed)
+    basedirs = ["/Users/helenarichie/Desktop/2024-11-01/", "/Users/helenarichie/Desktop/2024-10-25/"]
+    simulations = ["m82", "highz"]
+    styles = ["solid", "dashed"]
 
     color_hot, color_mixed, color_cool = sns.color_palette(palette="flare", n_colors=3)
     linewidth = 3
@@ -40,29 +27,28 @@ def main(basedir, outdir, fig_name, time, simulation, weight, tail):
 
     plt.tick_params(axis="both", which="both", top=True, right=True)
 
-    plt.plot(bin_tot, calc_tau_sp(density_mixed, temp_mixed, .1)*1e-6, label=r"mixed, m82", color=color_mixed, linestyle="solid", linewidth=linewidth)
-    plt.plot(bin_tot, calc_tau_sp(density_hot, temp_hot, .1)*1e-6, label=r"hot, m82", color=color_hot, linestyle="solid", linewidth=linewidth)
+    for i, sim in enumerate(simulations):
 
-    wh_rad = np.argmin(abs(bin_tot-1))
-    print(f"m82 cooling time at 1 kpc: {t_cool_mixed[wh_rad]/1e6:1e} Myr, {density_mixed[wh_rad]:1e} cm^-3, {temp_mixed[wh_rad]:1e} K, {temp_hot[wh_rad]:1e} K")
+        radial_dir = os.path.join(basedirs[i], "profiles/radial/")
 
-    ################# highz #################
-    radial_dir = os.path.join("/Users/helenarichie/Desktop/2024-10-25/profiles/radial/")
-    _, _, _, density_hot, _, temp_hot, _, _, _, _ = read_radial_profile(radial_dir, fnum, "highz", "hot", weight, tail)
-    _, _, _, density_cool, _, temp_cool, _, _, _, _ = read_radial_profile(radial_dir, fnum, "highz", "cold", weight, tail)
-     # median values
-    density_hot, density_cool, temp_hot, temp_cool = np.array(density_hot[1]), np.array(density_cool[1]), np.array(temp_hot[1]), np.array(temp_cool[1])
-    density_mixed = np.sqrt(density_cool * density_hot)
-    temp_mixed = np.sqrt(temp_cool * temp_hot)
-    t_cool_mixed = []
-    for coord in zip(density_mixed, temp_mixed):
-        t_cool_mixed.append(calc_cooling_time(coord[0], coord[1]))
-    t_cool_mixed = np.array(t_cool_mixed)
+        bin_tot, _, _, density_hot, _, temp_hot, _, _, _, _ = read_radial_profile(radial_dir, fnum, sim, "hot", weight, tail)
+        bin_tot, _, _, density_mixed, _, temp_mixed, _, _, _, _ = read_radial_profile(radial_dir, fnum, sim, "mixed", weight, tail)
 
-    plt.plot(bin_tot, calc_tau_sp(density_mixed, temp_mixed, .1)*1e-6, label=r"mixed, high-z", color=color_mixed, linestyle="dashed", linewidth=linewidth)
-    plt.plot(bin_tot, calc_tau_sp(density_hot, temp_hot, .1)*1e-6, label=r"hot, high-z", color=color_hot, linestyle="dashed", linewidth=linewidth)
+        bin_tot = np.array(bin_tot)
 
-    print(f"highz cooling time at 1 kpc: {t_cool_mixed[wh_rad]/1e6:1e} Myr, {density_mixed[wh_rad]:1e} cm^-3, {temp_mixed[wh_rad]:1e} K, {temp_hot[wh_rad]:1e} K")
+        # median values
+        density_hot, density_mixed, temp_hot, temp_mixed = np.array(density_hot[3]), np.array(density_mixed[3]), np.array(temp_hot[3]), np.array(temp_mixed[3])
+
+        t_cool_mixed = []
+        for coord in zip(density_mixed, temp_mixed):
+            t_cool_mixed.append(calc_cooling_time(coord[0], coord[1]))
+        t_cool_mixed = np.array(t_cool_mixed)
+
+        plt.plot(bin_tot[bin_tot<=r_max], calc_tau_sp(density_mixed[bin_tot<=r_max], temp_mixed[bin_tot<=r_max], .1)*1e-6, label=f"mixed, {sim}", color=color_mixed, linestyle=styles[i], linewidth=linewidth)
+        plt.plot(bin_tot[bin_tot<=r_max], calc_tau_sp(density_hot[bin_tot<=r_max], temp_hot[bin_tot<=r_max], .1)*1e-6, label=f"hot, {sim}", color=color_hot, linestyle=styles[i], linewidth=linewidth)
+
+        wh_rad = np.argmin(abs(bin_tot-1))
+        print(f"{sim} cooling time at 1 kpc: {t_cool_mixed[wh_rad]/1e6:1e} Myr, {density_mixed[wh_rad]:1e} cm^-3, {temp_mixed[wh_rad]:1e} K, {temp_hot[wh_rad]:1e} K")
 
     plt.xlabel("r [kpc]")
     plt.ylabel(r"$t_{sp}(a=0.01~\mu m)$ [Myr]")
@@ -89,4 +75,4 @@ if __name__ == "__main__":
     fig_name = args.fig_name
 
 
-    main(basedir, outdir, fig_name, time, simulation, weight, tail)
+    main(outdir, fig_name, time, weight, tail)
