@@ -122,13 +122,16 @@ def read_radial_profile(basedir, fnum, simulation, phase, weight, tail=None):
                 if line.startswith("# Statistics:"):
                     parse_totals = False
                     parse_stats = True
-    
-        m_dust = np.array([m_dust_0, m_dust_1, m_dust_2, m_dust_3])
-        gas_density = np.array([gas_avg, gas_med, gas_lo, gas_hi])
-        temperature = np.array([temp_avg, temp_med, temp_lo, temp_hi])
-        velocity = np.array([v_avg, v_med, v_lo, v_hi])
-        pressure = np.array([P_avg, P_med, P_lo, P_hi])
-        entropy = np.array([S_avg, S_med, S_lo, S_hi])
-        mach = np.array([M_avg, M_med, M_lo, M_hi])
+
+
+        bin_tot = np.array(bin_tot)
+        cell_count = np.array(cell_count)
+        m_dust = np.array([np.array(m_dust_0), np.array(m_dust_1), np.array(m_dust_2), np.array(m_dust_3)])
+        gas_density = np.array([np.array(gas_avg), np.array(gas_med), np.array(gas_lo), np.array(gas_hi)])
+        temperature = np.array([np.array(temp_avg), temp_med, temp_lo, temp_hi])
+        velocity = np.array([np.array(v_avg), np.array(v_med), np.array(v_lo), np.array(v_hi)])
+        pressure = np.array([np.array(P_avg), np.array(P_med), np.array(P_lo), np.array(P_hi)])
+        entropy = np.array([np.array(S_avg), np.array(S_med), np.array(S_lo), np.array(S_hi)])
+        mach = np.array([np.array(M_avg), np.array(M_med), np.array(M_lo), np.array(M_hi)])
 
     return bin_tot, m_gas, m_dust, gas_density, cell_count, temperature, velocity, pressure, entropy, mach
