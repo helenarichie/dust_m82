@@ -2,8 +2,8 @@ import argparse
 
 def read_cmdline():
     p = argparse.ArgumentParser()
-    p.add_argument("-b", "--basedir", type=str, required=True)
-    p.add_argument("-c", "--configdir", type=str)
+    p.add_argument("-b", "--basedir", type=str)
+    p.add_argument("-c", "--configdir", type=str, default="/Users/helenarichie/GitHub/my_scripts/")
     p.add_argument("-o", "--outdir", type=str)
     p.add_argument("-f", "--fnum", type=int, required=False)
     p.add_argument("-s", "--simulation", type=str, required=False)
