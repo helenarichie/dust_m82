@@ -23,7 +23,6 @@ def main(basedir, outdir, fig_name, field_names, time, ymin, ymax, mode):
 
     wh_time = np.where(time_output == time)[0][0]
 
-    pad = 0.1
     fontsize = 20
     linewidth = 3
     color_hot, color_mixed, color_cool = sns.color_palette(palette="flare", n_colors=3)
@@ -37,6 +36,7 @@ def main(basedir, outdir, fig_name, field_names, time, ymin, ymax, mode):
         color = "white"
     ymin = np.amin(rates_hot[0][:wh_time]+rates_mixed[0][:wh_time]+rates_cool[0][:wh_time])
     ymax = np.amax(rates_hot[0][:wh_time]+rates_mixed[0][:wh_time]+rates_cool[0][:wh_time])
+    pad = 0.05 * (ymax - ymin)
 
     fig, ax = plt.subplots(1, len(field_names), figsize=(15, 4.5), sharey=True)
 
@@ -46,6 +46,7 @@ def main(basedir, outdir, fig_name, field_names, time, ymin, ymax, mode):
         ax[i].plot(time_output[:wh_time]/1e3, rates_mixed[i][:wh_time], color=color_mixed, linestyle="solid", linewidth=linewidth, label="mixed")
         ax[i].plot(time_output[:wh_time]/1e3, rates_cool[i][:wh_time], color=color_cool, linestyle="solid", linewidth=linewidth, label="cool")
         ax[i].plot(time_output[:wh_time]/1e3, (rates_hot[i][:wh_time]+rates_mixed[i][:wh_time]+rates_cool[i][:wh_time]), color="grey", linestyle="solid", linewidth=linewidth, label="total", alpha=0.5)
+        ax[i].axvline(30, zorder=0, linewidth=linewidth, color="grey", linestyle="--", alpha=0.5)
 
         ax[i].tick_params(axis="both", which="both", labelsize=15, top=True)
         ax[i].set_xlabel(r"$Time~[Myr]$", fontsize=fontsize)
